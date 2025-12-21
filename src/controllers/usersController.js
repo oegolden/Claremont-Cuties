@@ -1,4 +1,6 @@
 const UsersService = require('../services/usersService');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 class UsersController {
   constructor() {
@@ -61,7 +63,7 @@ class UsersController {
 
   async login(req, res, next) {
       try {
-        ({email,password}) = req.body;
+        const {email, password} = req.body;
         const user = await this.service.getByEmail(email);
         if (user && await bcrypt.compare(password, user.password)) {
           const accessToken = jwt.sign(
