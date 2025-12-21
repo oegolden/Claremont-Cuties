@@ -14,7 +14,7 @@ class UsersController {
   async list(req, res, next) {
     try {
       const users = await this.service.list();
-      res.json(users);
+      return res.json(users);
     } catch (err) {
       next(err);
     }
@@ -33,7 +33,7 @@ class UsersController {
   async create(req, res, next) {
     try {
       const user = await this.service.create(req.body);
-      res.status(201).json(user);
+      return res.status(201).json(user);
     } catch (err) {
       next(err);
     }
@@ -58,6 +58,25 @@ class UsersController {
       next(err);
     }
   }
+
+  async login(req, res, next) {
+      try {
+        ({email,password}) = req.body;
+        const user = await this.service.getByEmail(email);
+        if (user && await bcrypt.compare(password, user.password)) {
+          const accessToken = jwt.sign(
+            user,
+            process.env.ACCESS_TOKEN_SECRET,
+            {expiresIn: '1h'}
+          )
+          res.status(200).json({accessToken: accessToken, user: user});
+        } else {
+          return res.status(401).json({error: 'Invalid email or password'});
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
 }
 
 module.exports = UsersController;
