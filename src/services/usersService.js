@@ -70,22 +70,6 @@ class UsersService {
     }
   }
 
-  async login(email, password) {
-    try {
-      const user = await this.getByEmail(email);
-      if (user && await bcrypt.compare(password, user.password)) {
-        const accessToken = jwt.sign(
-          user,
-          process.env.ACCESS_TOKEN_SECRET,
-          {expiresIn: '1h'}
-        )
-      } else {
-        return null;
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
 }
 
 module.exports = UsersService;
