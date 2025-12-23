@@ -44,7 +44,7 @@ class UsersService {
       const { name, email, age, home_location, campus, year, social_media_accounts, gender, sexual_orientation , form_id} = data;
       const res = await pool.query(
         'UPDATE users SET name = $1, email = $2, age = $3, home_location = $4, campus = $5, year = $6, social_media_accounts = $7, gender = $8, sexual_orientation = $9, form_id = $10 WHERE id = $11 RETURNING *',
-        [name, email, age, home_location, campus, year, social_media_accounts, gender, sexual_orientation , form_id]
+        [name, email, age, home_location, campus, year, social_media_accounts, gender, sexual_orientation , form_id, id]
       );
       return res.rows[0];
     } catch (err) {

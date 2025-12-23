@@ -1,16 +1,8 @@
 const UsersService = require('../services/usersService');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 class UsersController {
-  constructor() {
-    this.service = new UsersService();
-    // bind methods if you prefer not to bind in routes
-    this.list = this.list.bind(this);
-    this.get = this.get.bind(this);
-    this.create = this.create.bind(this);
-    this.update = this.update.bind(this);
-    this.delete = this.delete.bind(this);
-  }
-
   async list(req, res, next) {
     try {
       const users = await this.service.list();
@@ -61,7 +53,7 @@ class UsersController {
 
   async login(req, res, next) {
       try {
-        ({email,password}) = req.body;
+        const {email, password} = req.body;
         const user = await this.service.getByEmail(email);
         if (user && await bcrypt.compare(password, user.password)) {
           const accessToken = jwt.sign(
