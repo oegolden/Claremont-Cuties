@@ -14,6 +14,6 @@ router.post('/', ctrl.create.bind(ctrl));
 router.put('/', ctrl.update.bind(ctrl));
 
 // delete (not implemented)
-router.delete('/:user1Id/:matchedID?', ctrl.delete.bind(ctrl));
+router.delete('/:user1Id/:matchedID', ctrl.delete.bind(ctrl));
 
 module.exports = router;
