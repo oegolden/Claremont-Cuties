@@ -40,8 +40,10 @@ const MessagesService = require('../src/services/messagesService');
   console.log(edited);
 
   console.log('\n-- delete message --');
-  const deleted = await service.deleteMessage(inserted.id);
-  console.log(deleted);
+  const deleted = await service.deleteMessage(2);
+  const conv2 = await service.getMessagesForUserFromSender(1, 2, 10, 0);
+  console.log(conv2);
+
 
   await pool.end();
 })();
