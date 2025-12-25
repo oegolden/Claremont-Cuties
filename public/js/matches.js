@@ -11,61 +11,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         const card = document.createElement('div');
         card.className = 'match-card';
 
-        const avatarWrap = document.createElement('div');
-        avatarWrap.className = 'match-avatar';
-        // Try common photo fields, otherwise show initials
-        const imgUrl = u.user_photo|| null;
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'match-avatar';
+        const imgUrl = u.avatar_url || u.photo || u.profile_image || null;
         if (imgUrl) {
             const img = document.createElement('img');
             img.src = imgUrl;
             img.alt = safeText(u.name) + ' avatar';
-            avatarWrap.appendChild(img);
+            avatar.appendChild(img);
         } else {
             const initials = (safeText(u.name) || 'U').split(/\s+/).map(s => s[0]).slice(0,2).join('').toUpperCase();
-            avatarWrap.textContent = initials;
+            avatar.textContent = initials;
         }
 
+        // Info column (name + email)
         const info = document.createElement('div');
         info.className = 'match-info';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'match-name-under';
+        nameEl.textContent = safeText(u.name) || 'Unnamed';
+        const emailEl = document.createElement('div');
+        emailEl.className = 'match-email';
+        emailEl.textContent = safeText(u.email) || '';
+        info.appendChild(nameEl);
+        info.appendChild(emailEl);
 
-        const name = document.createElement('h3');
-        name.textContent = safeText(u.name) || 'Unnamed';
-
-        const meta = document.createElement('div');
-        meta.className = 'match-meta';
-        const parts = [];
-        if (u.age) parts.push(`${u.age} yrs`);
-        if (u.campus) parts.push(safeText(u.campus));
-        meta.textContent = parts.join(' • ');
-
-        const email = document.createElement('div');
-        email.className = 'match-email';
-        email.textContent = safeText(u.email);
-
-        const socials = document.createElement('div');
-        socials.className = 'match-socials';
-        socials.textContent = safeText(u.social_media_accounts);
-
-        const actions = document.createElement('div');
-        actions.className = 'match-actions';
-
+        // Message button
         const msgBtn = document.createElement('button');
         msgBtn.className = 'btn-primary';
+        msgBtn.type = 'button';
         msgBtn.textContent = 'Message';
         msgBtn.addEventListener('click', () => {
             window.location.href = `/messages.html?to=${encodeURIComponent(u.id)}`;
         });
 
-        actions.appendChild(msgBtn);
-
-        info.appendChild(name);
-        info.appendChild(meta);
-        if (u.email) info.appendChild(email);
-        if (u.social_media_accounts) info.appendChild(socials);
-        info.appendChild(actions);
-
-        card.appendChild(avatarWrap);
+        card.appendChild(avatar);
         card.appendChild(info);
+        card.appendChild(msgBtn);
 
         return card;
     };
