@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matches - Datamatch</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/">Datamatch</a>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-links">
+                    <a id="navQuiz" class="nav-profile-btn" href="/quiz.html" style="display: none;">Quiz</a>
+                    <a id="navMatches" class="nav-profile-btn" href="/matches.html" style="display: none;">Matches</a>
+                    <a id="navMessages" class="nav-profile-btn" href="/messages.html" style="display: none;">Messages</a>
+                    <a id="navFAQ" class="nav-profile-btn" href="/faq.html">FAQ</a>
+                </div>
+                <button id="profileBtn" class="nav-profile-btn">                    
+                    <span id="profileBtnText">Profile</span>
+                </button>
+                <button id="logoutBtn" class="nav-profile-btn" style="background: #dc3545;">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="matches-container">
+            <header class="matches-header">
+                <h1>Your Matches</h1>
+                <p id="matchesIntro">People you've matched with will appear here.</p>
+            </header>
+
+            <section id="matchesList" class="matches-list">
+                <!-- Match cards will be injected here -->
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/navbar.js"></script>
+    <script src="/js/matches.js"></script>
+</body>
+</html>
