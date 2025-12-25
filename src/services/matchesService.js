@@ -5,7 +5,7 @@ class MatchService {
     }
     async getMatchedUsers(userId) {
         try {
-                const res = await pool.query('SELECT b.* FROM matches a JOIN users b ON a.user2_id = b.id WHERE a.user1_id = $1', [userId]);
+                const res = await pool.query('SELECT b.* FROM matches a JOIN users b ON a.user_id_2 = b.id WHERE a.user_id_1 = $1', [userId]);
                 return res.rows;
             } catch (err) { 
                 console.error(err);
@@ -14,7 +14,7 @@ class MatchService {
         }
     async createMatch(user1Id, user2Id) {
         try {
-            const res = await pool.query('Insert into matches (user1_id, user2_id) VALUES ($1, $2) RETURNING *', [user1Id, user2Id]);
+            const res = await pool.query('Insert into matches (user_id_1, user_id_2) VALUES ($1, $2) RETURNING *', [user1Id, user2Id]);
             return res.rows[0];
         } catch (err) {
             console.error(err);
@@ -23,7 +23,7 @@ class MatchService {
     }
     async updateMatch(user1Id, user2Id) {
         try {
-            const res = await pool.query('Update matches set user2_id = $2 where user1_id = $1 RETURNING *', [user1Id, user2Id]);
+            const res = await pool.query('Update matches set user_id_2 = $2 where user_id_1 = $1 RETURNING *', [user1Id, user2Id]);
             return res.rows[0];
         } catch (err) {
             console.error(err);
@@ -32,10 +32,10 @@ class MatchService {
     }
     async deleteMatch(user1Id, user2Id){
         try{
-            const res = await pool.query('DELETE from matches where user1_id = $1 and user2_id = user$2 RETURNING *', [user1Id, user2Id]);
+            const res = await pool.query('DELETE from matches where user_id_1 = $1 and user_id_2 = $2 RETURNING *', [user1Id, user2Id]);
             return res.rows[0];
         } catch(err){
-            consoler.error(err);
+            console.error(err);
             return null;
         }
     }
