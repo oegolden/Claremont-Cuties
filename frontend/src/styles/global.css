@@ -230,7 +230,7 @@ body {
 }
 
 .dashboard-container {
-    max-width: 1000px;
+    max-width: auto;
     margin: 0 auto;
     padding: 20px;
 }
@@ -247,7 +247,7 @@ body {
 
 .dashboard-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 2fr;
     gap: 32px;
     align-items: start;
 }
@@ -457,6 +457,39 @@ body {
 .analysis-content {
     text-align: center;
     padding: 20px 0;
+}
+
+.countdown-container {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.countdown-item {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 80px;
+    text-align: center;
+}
+
+.countdown-value {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #ff7aa2;
+}
+
+.countdown-label {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.countdown-text {
+    color: #666;
+    margin-bottom: 24px;
 }
 
 .quiz-cta {

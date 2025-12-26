@@ -14,16 +14,17 @@ const Dashboard = () => {
     campus: '',
     campus_other: '',
     year: '',
-    social_media_accounts: '',
     gender: '',
     gender_other: '',
     sexual_orientation: '',
     orientation_other: ''
   });
 
+  const [socialMediaAccounts, setSocialMediaAccounts] = useState([]);
   const [showCampusOther, setShowCampusOther] = useState(false);
   const [showGenderOther, setShowGenderOther] = useState(false);
   const [showOrientationOther, setShowOrientationOther] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({ message: '', type: '' });
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -32,7 +33,7 @@ const Dashboard = () => {
     }
 
     if (user) {
-      const campusOptions = ['Harvey Mudd','Pitzer','Pomona','Claremont McKenna','Scripps'];
+      const campusOptions = ['HMC','Pitzer','Pomona','CMC','Scripps'];
       const genderOptions = ['Woman','Man','Non-binary','Genderqueer/Genderfluid','Questioning','Prefer not to say'];
       const orientationOptions = ['Heterosexual','Homosexual','Bisexual','Asexual','Pansexual'];
       
@@ -43,7 +44,7 @@ const Dashboard = () => {
         }
         const e = String(email).toLowerCase();
         if (/\b(hmc)\b|hmc\.edu/.test(e)) {
-          return 'Harvey Mudd';
+          return 'HMC';
         }
         if (/pitzer/.test(e)) {
           return 'Pitzer';
@@ -52,7 +53,7 @@ const Dashboard = () => {
           return 'Pomona';
         }
         if (/cmc/.test(e)) {
-          return 'Claremont McKenna';
+          return 'CMC';
         }
         if (/scripps/.test(e)) {
           return 'Scripps';
@@ -114,12 +115,60 @@ const Dashboard = () => {
         campus: campusData.select,
         campus_other: campusData.other,
         year: user.year || '',
-        social_media_accounts: user.social_media_accounts || '',
         gender: genderData.select,
         gender_other: genderData.other,
         sexual_orientation: orientationData.select,
         orientation_other: orientationData.other
       });
+
+      // Parse social media accounts from JSON
+      if (user.social_media_accounts) {
+        try {
+          const parsed = typeof user.social_media_accounts === 'string' 
+            ? JSON.parse(user.social_media_accounts) 
+            : user.social_media_accounts;
+          const accountsArray = Object.entries(parsed).map(([platform, url]) => {
+            const username = url.split('/').pop() || '';
+            return { platform, username };
+          });
+          const savedAccounts = localStorage.getItem('socialMediaAccounts');
+          if (savedAccounts) {
+            try {
+              const localAccounts = JSON.parse(savedAccounts);
+              if (localAccounts.length > 0) {
+                setSocialMediaAccounts(localAccounts);
+              } else {
+                setSocialMediaAccounts(accountsArray);
+              }
+            } catch {
+              setSocialMediaAccounts(accountsArray);
+            }
+          } else {
+            setSocialMediaAccounts(accountsArray);
+          }
+        } catch (e) {
+          console.error('Error parsing social media accounts:', e);
+          const savedAccounts = localStorage.getItem('socialMediaAccounts');
+          if (savedAccounts) {
+            try {
+              setSocialMediaAccounts(JSON.parse(savedAccounts));
+            } catch {
+              setSocialMediaAccounts([]);
+            }
+          } else {
+            setSocialMediaAccounts([]);
+          }
+        }
+      } else {
+        const savedAccounts = localStorage.getItem('socialMediaAccounts');
+        if (savedAccounts) {
+          try {
+            setSocialMediaAccounts(JSON.parse(savedAccounts));
+          } catch {
+            setSocialMediaAccounts([]);
+          }
+        }
+      }
 
       setShowCampusOther(campusData.showOther);
       setShowGenderOther(genderData.showOther);
@@ -133,6 +182,25 @@ const Dashboard = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleAddSocialMedia = () => {
+    const updated = [...socialMediaAccounts, { platform: '', username: '' }];
+    setSocialMediaAccounts(updated);
+    localStorage.setItem('socialMediaAccounts', JSON.stringify(updated));
+  };
+
+  const handleRemoveSocialMedia = (index) => {
+    const updated = socialMediaAccounts.filter((_, i) => i !== index);
+    setSocialMediaAccounts(updated);
+    localStorage.setItem('socialMediaAccounts', JSON.stringify(updated));
+  };
+
+  const handleSocialMediaChange = (index, field, value) => {
+    const updated = [...socialMediaAccounts];
+    updated[index][field] = value;
+    setSocialMediaAccounts(updated);
+    localStorage.setItem('socialMediaAccounts', JSON.stringify(updated));
   };
 
   const handleSelectChange = (e) => {
@@ -163,9 +231,68 @@ const Dashboard = () => {
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    // TODO: profile save to backend
-    console.log('Profile data to save:', formData);
-    alert('Profile save functionality will be implemented with backend API integration.');
+    setSaveStatus({ message: '', type: '' });
+    
+    try {
+      // Convert social media accounts to JSON format
+      const socialMediaObj = {};
+      socialMediaAccounts.forEach(({ platform, username }) => {
+        if (platform && username) {
+          const baseUrls = {
+            instagram: 'https://instagram.com/',
+            snapchat: 'https://snapchat.com/add/',
+            twitter: 'https://twitter.com/',
+            facebook: 'https://facebook.com/'
+          };
+          const baseUrl = baseUrls[platform.toLowerCase()] || `https://${platform.toLowerCase()}.com/`;
+          socialMediaObj[platform.toLowerCase()] = baseUrl + username;
+        }
+      });
+
+      // Prepare data with proper handling of "Other" fields
+      const profileData = {
+        name: formData.name,
+        email: formData.email,
+        age: formData.age ? parseInt(formData.age) : null,
+        home_location: formData.home_location,
+        campus: formData.campus === 'Other' ? formData.campus_other : formData.campus,
+        year: formData.year,
+        social_media_accounts: JSON.stringify(socialMediaObj),
+        gender: formData.gender === 'Other' ? formData.gender_other : formData.gender,
+        sexual_orientation: formData.sexual_orientation === 'Other' ? formData.orientation_other : formData.sexual_orientation,
+        form_id: user.form_id || null
+      };
+
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const updatedUser = await response.json();
+      
+      // Update user in auth context and localStorage
+      const updatedUserData = { ...user, ...updatedUser };
+      localStorage.setItem('user', JSON.stringify(updatedUserData));
+      
+      setSaveStatus({ message: 'Profile saved successfully!', type: 'success' });
+      
+      setTimeout(() => {
+        setSaveStatus({ message: '', type: '' });
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      setSaveStatus({ message: 'Failed to save profile. Please try again.', type: 'error' });
+    }
   };
 
   if (loading) {
@@ -239,10 +366,10 @@ const Dashboard = () => {
                   onChange={handleSelectChange}
                 >
                   <option value="">Select campus</option>
-                  <option value="Harvey Mudd">Harvey Mudd</option>
+                  <option value="HMC">Harvey Mudd</option>
                   <option value="Pitzer">Pitzer</option>
                   <option value="Pomona">Pomona</option>
-                  <option value="Claremont McKenna">Claremont McKenna</option>
+                  <option value="CMC">Claremont McKenna</option>
                   <option value="Scripps">Scripps</option>
                   <option value="Other">Other</option>
                 </select>
@@ -278,15 +405,60 @@ const Dashboard = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="social_media_accounts">Instagram</label>
-                <input
-                  id="social_media_accounts"
-                  name="social_media_accounts"
-                  type="text"
-                  placeholder="instagram: @yourhandle"
-                  value={formData.social_media_accounts}
-                  onChange={handleInputChange}
-                />
+                <label>Social Media Accounts</label>
+                {socialMediaAccounts.map((account, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                    <select
+                      value={account.platform}
+                      onChange={(e) => handleSocialMediaChange(index, 'platform', e.target.value)}
+                      style={{ flex: '0 0 140px' }}
+                    >
+                      <option value="">Select platform</option>
+                      <option value="Instagram">Instagram</option>
+                      <option value="Snapchat">Snapchat</option>
+                      <option value="Twitter">Twitter</option>
+                      <option value="Facebook">Facebook</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Username"
+                      value={account.username}
+                      onChange={(e) => handleSocialMediaChange(index, 'username', e.target.value)}
+                      style={{ flex: '1' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSocialMedia(index)}
+                      style={{
+                        padding: '3px 3px',
+                        background: 'transparent',
+                        color: '#dc3545',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddSocialMedia}
+                  style={{
+                    padding: '8px 16px',
+                    background: 'transparent',
+                    color: '#92b070ff',
+                    border: 'solid',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    marginTop: '8px'
+                  }}
+                >
+                  + Add Social Media
+                </button>
               </div>
 
               <div className="form-group">
@@ -353,6 +525,20 @@ const Dashboard = () => {
               <button type="submit" className="save-button">
                 Save Profile
               </button>
+              
+              {saveStatus.message && (
+                <div style={{
+                  marginTop: '16px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  backgroundColor: saveStatus.type === 'success' ? '#d4edda' : '#f8d7da',
+                  color: saveStatus.type === 'success' ? '#155724' : '#721c24',
+                  textAlign: 'center',
+                  fontWeight: '600'
+                }}>
+                  {saveStatus.message}
+                </div>
+              )}
             </form>
           </div>
 
