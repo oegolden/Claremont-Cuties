@@ -115,7 +115,7 @@ body {
 }
 
 .home-container h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #333;
     margin-bottom: 16px;
     font-weight: 700;
@@ -135,7 +135,7 @@ body {
 }
 
 .home-content p {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: #555;
     line-height: 1.6;
 }
@@ -296,7 +296,10 @@ body {
     padding: 12px;
     border: 2px solid #e0e0e0;
     border-radius: 6px;
-    font-size: 16px;
+    font-family: 'Albert Sans', sans-serif;
+    font-size: 16px;                          
+    font-weight: 400;                         
+    color: #333;     
     transition: border-color 0.2s ease;
 }
 
@@ -333,6 +336,7 @@ body {
     border: none;
     padding: 14px 24px;
     border-radius: 8px;
+    font-family: 'Albert Sans', sans-serif;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -541,7 +545,7 @@ body {
     
     .nav-profile-btn {
         padding: 0 6px;
-        font-size: 12px;
+        font-size: 13px;
     }
     
     .login-container {

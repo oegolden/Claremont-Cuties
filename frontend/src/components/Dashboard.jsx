@@ -453,6 +453,7 @@ const Dashboard = () => {
                     border: 'solid',
                     borderRadius: '6px',
                     cursor: 'pointer',
+                    fontFamily: 'Albert Sans',
                     fontSize: '14px',
                     marginTop: '8px'
                   }}
