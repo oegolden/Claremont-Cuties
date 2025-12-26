@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('./config/passport');
@@ -19,7 +20,9 @@ app.use(cookieParser());
 // Security Middleware through helmet
 app.use(helmet());
 
-app.use(express.static('public'));
+// Serve React app static files
+const frontendPath = path.join(__dirname, '../../frontend');
+app.use(express.static(frontendPath));
 
 app.use(
   session({
@@ -36,14 +39,23 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
+// Rate limiter middleware (apply before routes)
+app.use(rateLimiter);
+
+// API Routes
 app.use('/api', routes);
 app.use('/auth', authRoutes);
 
+// Serve React app for all non-API routes (client-side routing fallback)
+app.use((req, res, next) => {
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api/') || req.path.startsWith('/auth/')) {
+    return res.status(404).json({ error: 'Route not found' });
+  }
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
 // Error handling middleware
 app.use(errorHandler);
-
-// Rate limiter middleware
-app.use(rateLimiter);
 
 module.exports = app;
