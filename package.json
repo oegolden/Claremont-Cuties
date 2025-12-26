@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node backend/src/server.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:integration": "node scripts/integration_messages.js"
+    "test:integration": "node backend/scripts/integration_messages.js"
   },
   "keywords": [],
   "author": "",
@@ -24,9 +28,9 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-microsoft": "^2.1.0",
     "pg": "^8.16.3"
-  }
-  ,
+  },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "pg-mem": "^2.1.0"
   }
 }

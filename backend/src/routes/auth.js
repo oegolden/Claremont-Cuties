@@ -16,7 +16,7 @@ router.get(
   (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user, info) => {
       if (err || !user) {
-        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?error=access_denied`);
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=access_denied`);
       }
 
       const token = jwt.sign(
@@ -25,7 +25,7 @@ router.get(
         { expiresIn: '7d' }
       );
 
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard.html#token=${encodeURIComponent(token)}`);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, name: user.name || user.displayName }))}`);
     })(req, res, next);
   }
 );
@@ -43,7 +43,7 @@ router.get(
   (req, res, next) => {
     passport.authenticate('microsoft', { session: false }, (err, user, info) => {
       if (err || !user) {
-        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login.html?error=access_denied`);
+        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=access_denied`);
       }
 
       const token = jwt.sign(
@@ -52,7 +52,7 @@ router.get(
         { expiresIn: '7d' }
       );
 
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard.html#token=${encodeURIComponent(token)}`);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, name: user.name || user.displayName }))}`);
     })(req, res, next);
   }
 );
