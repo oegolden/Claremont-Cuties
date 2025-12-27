@@ -13,6 +13,7 @@ const Messages = () => {
   const preselectedTo = searchParams.get('to');
 
   const [conversations, setConversations] = useState([]); // matches with start===true
+  const [conversationsLoading, setConversationsLoading] = useState(true);
   const [activeTo, setActiveTo] = useState(preselectedTo || null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
@@ -28,6 +29,7 @@ const Messages = () => {
 
     // fetch matches then filter by start field
     const fetchMatches = async () => {
+      setConversationsLoading(true);
       try {
         const token = localStorage.getItem('accessToken');
         const res = await fetch(`/api/matches/${user.id}`, {
@@ -40,6 +42,8 @@ const Messages = () => {
         if (!activeTo && started.length > 0) setActiveTo(started[0].id);
       } catch (e) {
         console.error('Error loading conversations', e);
+      } finally {
+        setConversationsLoading(false);
       }
     };
 
@@ -194,7 +198,11 @@ const Messages = () => {
     <div className="messages-page">
       <aside className="conversations-list">
         <h3>Conversations</h3>
-        {conversations.length === 0 && <div>No conversations yet.</div>}
+        {conversationsLoading ? (
+          <div>Loading conversations...</div>
+        ) : (
+          conversations.length === 0 && <div>No conversations yet.</div>
+        )}
         {conversations.map(m => {
           const imgUrl = getImgUrl(m);
           const initials = getInitials(m.name || m.email);
