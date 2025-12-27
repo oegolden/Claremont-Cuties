@@ -13,7 +13,10 @@ router.post('/', ctrl.create.bind(ctrl));
 // update a match (params or body)
 router.put('/', ctrl.update.bind(ctrl));
 
-// delete (not implemented)
+// mark a match as started
+router.patch('/:matchID/start', ctrl.startConversation.bind(ctrl));
+
+// delete
 router.delete('/:user1Id/:matchedID', ctrl.delete.bind(ctrl));
 
 module.exports = router;
