@@ -9,7 +9,7 @@ class MessagesService {
             const limit = count;
             const offset = page * limit;
             const res = await this.pool.query(
-                'SELECT * FROM messages WHERE ((sender_id = $1 AND reciever_id = $2) OR (sender_id = $2 AND reciever_id = $1)) ORDER BY sequence LIMIT $3 OFFSET $4',
+                'SELECT * FROM messages WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)) ORDER BY sequence LIMIT $3 OFFSET $4',
                 [senderID, receiverID, limit, offset]
             );
             return res.rows;
@@ -28,12 +28,12 @@ class MessagesService {
             throw err;
         }
     }
-
+       
     async insertMessage(senderID, receiverID, body) {
         try {
             const res = await this.pool.query(
-                `INSERT INTO messages (sender_id, reciever_id, timestamp, body, sequence)
-                 VALUES ($1, $2, now(), $3, COALESCE((SELECT max(sequence) FROM messages WHERE ((sender_id = $1 AND reciever_id = $2) OR (sender_id = $2 AND reciever_id = $1))), 0) + 1)
+                `INSERT INTO messages (sender_id, receiver_id, timestamp, body, sequence)
+                 VALUES ($1, $2, now(), $3, COALESCE((SELECT max(sequence) FROM messages WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1))), 0) + 1)
                  RETURNING *`,
                 [senderID, receiverID, body]
             );

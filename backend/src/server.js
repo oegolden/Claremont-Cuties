@@ -1,12 +1,43 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const app = require('./app');
 const config = require('./config');
 const db = require('./config/db');
 
 const PORT = (config && config.port) || process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+httpServer.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+// Basic socket.io handlers for direct messaging
+io.on('connection', (socket) => {
+  // client should emit 'identify' with their user id to join their personal room
+  socket.on('identify', (userId) => {
+    try {
+      const room = `user_${userId}`;
+      socket.join(room);
+    } catch (e) {
+      // ignore
+    }
+  });
+
+  // send a message to a userId
+  socket.on('message', (payload) => {
+    // payload: { to, from, text }
+    if (!payload || !payload.to) return;
+    const room = `user_${payload.to}`;
+    io.to(room).emit('message', payload);
+  });
 });
 
 let shuttingDown = false;

@@ -5,7 +5,7 @@ class MatchService {
     }
     async getMatchedUsers(userId) {
         try {
-                const res = await pool.query('SELECT b.* FROM matches a JOIN users b ON a.user_id_2 = b.id or a.user_id_1 = b.id WHERE b.id <> $1', [userId]);
+                const res = await pool.query('SELECT b.*,a.id as match_id,a.start as start FROM matches a JOIN users b ON a.user_id_2 = b.id or a.user_id_1 = b.id WHERE b.id <> $1', [userId]);
                 return res.rows;
             } catch (err) { 
                 console.error(err);
@@ -24,6 +24,15 @@ class MatchService {
     async updateMatch(user1Id, user2Id) {
         try {
             const res = await pool.query('Update matches set user_id_2 = $2 where user_id_1 = $1 RETURNING *', [user1Id, user2Id]);
+            return res.rows[0];
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    }
+    async setMatchStart(matchID) {
+        try {
+            const res = await pool.query('UPDATE matches SET start = true WHERE id = $1 RETURNING *', [matchID]);
             return res.rows[0];
         } catch (err) {
             console.error(err);

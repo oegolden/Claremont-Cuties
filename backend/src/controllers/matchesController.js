@@ -34,8 +34,21 @@ class MatchesController {
         try {
             const user1Id = req.params.user1Id || req.body.user1Id;
             const matchedID = req.body.user2Id || req.params.user2Id;
-            if (!user1Id || !user2Id) return res.status(400).json({ error: 'user1Id and matchedID are required' });
-            const updated = await this.service.updateMatch(user1Id, user2Id);
+            if (!user1Id || !matchedID) return res.status(400).json({ error: 'user1Id and matchedID are required' });
+            const updated = await this.service.updateMatch(user1Id, matchedID);
+            if (!updated) return res.status(404).json({ error: 'Match not found' });
+            return res.json(updated);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    // PATCH /matches/:matchID/start - mark the match as started
+    async startConversation(req, res, next) {
+        try {
+            const matchID = req.params.matchID;
+            if (!matchID) return res.status(400).json({ error: 'matchID is required' });
+            const updated = await this.service.setMatchStart(matchID);
             if (!updated) return res.status(404).json({ error: 'Match not found' });
             return res.json(updated);
         } catch (err) {

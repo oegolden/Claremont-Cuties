@@ -24,8 +24,7 @@ const Matches = () => {
         const response = await fetch(`/api/matches/${user.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
-          },
-          cache: 'no-store'
+          }
         });
 
         if (!response.ok) {
@@ -70,7 +69,20 @@ const Matches = () => {
       .toUpperCase();
 
     const handleMessage = () => {
-      navigate(`/messages?to=${encodeURIComponent(match.id)}`);
+      (async () => {
+        try {
+          const token = localStorage.getItem('accessToken');
+          // call backend to mark this match as started for the current user
+          await fetch(`/api/matches/${encodeURIComponent(match.match_id)}/start`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
+          });
+        } catch (e) {
+          console.error('Error marking match start', e);
+        } finally {
+          navigate(`/messages?to=${encodeURIComponent(match.id)}`);
+        }
+      })();
     };
 
     return (
