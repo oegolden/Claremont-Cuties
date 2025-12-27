@@ -6,6 +6,7 @@ import Home from './components/Home';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Matches from './components/Matches';
+import Messages from './components/Messages';
 import './styles/global.css';
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/quiz" element={<div style={{padding: '20px', textAlign: 'center'}}>Quiz page coming soon!</div>} />
             <Route path="/matches" element={<Matches />} />
-            <Route path="/messages" element={<div style={{padding: '20px', textAlign: 'center'}}>Messages page coming soon!</div>} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/faq" element={<div style={{padding: '20px', textAlign: 'center'}}>FAQ page coming soon!</div>} />
           </Routes>
         </div>
