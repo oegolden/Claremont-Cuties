@@ -1,22 +1,11 @@
 import React from "react";
 const ProgressBar = ({ progress }) => (
-  <div className="progress-bar-wrapper" style={{ margin: "1rem 0" }}>
-    <div
-      className="progress-bar"
-      style={{
-        width: "100%",
-        background: "#eee",
-        borderRadius: "8px",
-        height: "16px",
-        overflow: "hidden",
-      }}
-    >
+  <div className="progress-bar-wrapper">
+    <div className="progress-bar">
       <div
+        className="progress-bar-fill"
         style={{
           width: `${progress}%`,
-          background: "#8fa182ff",
-          height: "100%",
-          transition: "width 0.3s",
         }}
       />
     </div>
