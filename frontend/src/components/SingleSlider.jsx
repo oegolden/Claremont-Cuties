@@ -2,6 +2,8 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 
+// TODO: style sliders
+
 export default function SingleSlider({ value, onChange, min = 1, max = 5, label = "Select value" }) {
   const handleChange = (event, newValue) => {
     onChange(newValue);

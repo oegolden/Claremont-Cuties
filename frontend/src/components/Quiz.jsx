@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import ProgressBar from "./ProgressBar";
 import Question from "./Question";
 
@@ -263,7 +265,7 @@ const allQuestions = [
       "Mediterranean",
     ],
     required: true,
-    maxSelect: 5,
+    maxSelect: 3,
   },
 ];
 
@@ -271,6 +273,38 @@ const allQuestions = [
 const Quiz = () => {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
+  const { user, getToken } = useAuth();
+  const navigate = useNavigate();
+
+  // If user has already submitted a form, show already-submitted message
+  if (user && user.form_id) {
+    return (
+      <div className="quiz-container" style={{ textAlign: 'center', paddingTop: '2rem' }}>
+        <h1 style={{ marginBottom: '1rem', fontSize: '2rem' }}>Form Already Submitted</h1>
+        <p style={{ fontSize: '1.1rem', marginBottom: '2rem', color: '#666' }}>
+          You have already submitted your profile. Thank you for completing the quiz!
+        </p>
+        <button
+          onClick={() => navigate('/dashboard')}
+          style={{
+            fontFamily: 'Albert Sans',
+            background: '#ff72a1',
+            color: '#fff',
+            border: 'none',
+            padding: '0.75rem 2rem',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}
+          onMouseEnter={(e) => (e.target.style.background = '#ff5a8a')}
+          onMouseLeave={(e) => (e.target.style.background = '#ff72a1')}
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   const getFilteredQuestions = () => {
     const rel = answers["relationship_type"] || [];
@@ -315,11 +349,29 @@ const Quiz = () => {
   const canProceed = isAnswered(question, answers[question.id]);
   const isLast = current === quizQuestions.length - 1;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!canProceed) return;
-    // TODO: connect to backend API later
-    console.log('Quiz submission:', answers);
-    alert('Thanks! Your responses have been recorded locally.');
+    try {
+      const token = getToken();
+      const res = await fetch('/api/forms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ userId: user?.id, form_data: answers })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to save form');
+      }
+      const data = await res.json();
+      console.log('Form saved:', data);
+      navigate('/quiz-confirmation');
+    } catch (e) {
+      console.error(e);
+      alert('Unable to submit right now. Please try again.');
+    }
   };
 
   return (

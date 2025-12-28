@@ -299,7 +299,7 @@ const Dashboard = () => {
     return <div>Loading...</div>;
   }
 
-  const quizTaken = false; // TODO: real check for quiz taken
+  const quizTaken = user && user.form_id; // Check if user has completed the quiz
 
   return (
     <main className="main-content">
@@ -556,8 +556,8 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div>
-                  <p><strong>Profile Analysis</strong></p>
-                  {/* TODO: Display analysis results */}
+                  <h3>Thanks for finishing the quiz!</h3>
+                  <p>We're analyzing your responses and finding compatible matches for you.</p>
                 </div>
               )}
             </div>
