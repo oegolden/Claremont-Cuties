@@ -6,6 +6,7 @@ class UsersController {
   constructor() {
     this.service = new UsersService();
   }
+
   async list(req, res, next) {
     try {
       const users = await this.service.list();

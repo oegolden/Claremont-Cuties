@@ -75,6 +75,18 @@ class UsersService {
     }
   }
 
+  async setFormId(userId, formId) {
+    try {
+      const res = await pool.query(
+        'UPDATE users SET form_id = $2 WHERE id = $1 RETURNING *',
+        [userId, formId]
+      );
+      return res.rows[0];
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   async remove(id) {
     try {
       const res = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
