@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, setUserData } = useAuth();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -25,6 +25,9 @@ const Dashboard = () => {
   const [showGenderOther, setShowGenderOther] = useState(false);
   const [showOrientationOther, setShowOrientationOther] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ message: '', type: '' });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState('');
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -173,6 +176,21 @@ const Dashboard = () => {
       setShowCampusOther(campusData.showOther);
       setShowGenderOther(genderData.showOther);
       setShowOrientationOther(orientationData.showOther);
+      // fetch current photo presigned URL
+      (async function fetchPhoto(){
+        try {
+          const token = localStorage.getItem('accessToken');
+          const resp = await fetch(`/api/users/${user.id}/image`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data && data.url) setPhotoPreview(data.url);
+          }
+        } catch (e) {
+          // ignore
+        }
+      })();
     }
   }, [user, isAuthenticated, loading, navigate]);
 
@@ -188,6 +206,71 @@ const Dashboard = () => {
     const updated = [...socialMediaAccounts, { platform: '', username: '' }];
     setSocialMediaAccounts(updated);
     localStorage.setItem('socialMediaAccounts', JSON.stringify(updated));
+  };
+
+  const handleFileChange = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    setPhotoFile(f);
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(reader.result);
+    reader.readAsDataURL(f);
+  };
+
+  const handleUploadPhoto = async () => {
+    if (!photoFile || !user) return;
+    setPhotoLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const fd = new FormData();
+      fd.append('image', photoFile);
+      const resp = await fetch(`/api/users/${user.id}/image`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd
+      });
+      if (!resp.ok) throw new Error('Upload failed');
+      const updated = await resp.json();
+      // updated may include user_photo (presigned URL)
+      if (updated.user_photo) setPhotoPreview(updated.user_photo);
+      // update stored user and context
+      const updatedUser = { ...user, ...updated };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      if (typeof setUserData === 'function') setUserData(updatedUser);
+      setSaveStatus({ message: 'Photo uploaded', type: 'success' });
+      setTimeout(() => setSaveStatus({ message: '', type: '' }), 2500);
+      setPhotoFile(null);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus({ message: 'Photo upload failed', type: 'error' });
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    if (!user) return;
+    setPhotoLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const resp = await fetch(`/api/users/${user.id}/image`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!resp.ok) throw new Error('Delete failed');
+      // clear preview and stored user and context
+      setPhotoPreview('');
+      const updatedUser = { ...user, user_photo: null, user_photo_key: null };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      if (typeof setUserData === 'function') setUserData(updatedUser);
+      setSaveStatus({ message: 'Photo deleted', type: 'success' });
+      setTimeout(() => setSaveStatus({ message: '', type: '' }), 2500);
+    } catch (err) {
+      console.error(err);
+      setSaveStatus({ message: 'Photo delete failed', type: 'error' });
+    } finally {
+      setPhotoLoading(false);
+    }
   };
 
   const handleRemoveSocialMedia = (index) => {
@@ -321,6 +404,26 @@ const Dashboard = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Your Photo</label>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div style={{ width: 96, height: 96, borderRadius: 8, background: '#f3f3f3', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ color: '#888' }}>No photo</div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="file" accept="image/*" onChange={handleFileChange} />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button type="button" onClick={handleUploadPhoto} disabled={photoLoading || !photoFile} className="save-button">{photoLoading ? 'Uploading...' : 'Upload'}</button>
+                      <button type="button" onClick={handleDeletePhoto} disabled={photoLoading || !photoPreview} style={{ background: 'transparent', color: '#dc3545', border: '1px solid #dc3545', borderRadius: 6, padding: '8px 12px' }}>Delete</button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="form-group">

@@ -7,23 +7,7 @@ const path = require('path');
 
 const BUCKET = process.env.S3_BUCKET;
 
-function parseKeyFromUrl(url) {
-  try {
-    const u = new URL(url);
-    let pathname = decodeURIComponent(u.pathname || '');
-    if (!pathname) return null;
-    // remove leading /
-    if (pathname.startsWith('/')) pathname = pathname.slice(1);
-    // If path-style url (bucket in path) remove bucket prefix
-    if (BUCKET && pathname.startsWith(`${BUCKET}/`)) {
-      return pathname.slice(BUCKET.length + 1);
-    }
-    // otherwise the pathname is the key
-    return pathname;
-  } catch (e) {
-    return null;
-  }
-}
+// We now store the S3 object key in `user_photo_key` column.
 
 class UsersService {
   constructor() {
@@ -110,15 +94,9 @@ class UsersService {
     try {
       const user = await this.getById(userId);
       if (!user) return null;
-      if (!user.user_photo) return null;
-      // Try to parse key from stored URL so we can generate a fresh presigned URL
-      const key = parseKeyFromUrl(user.user_photo);
-      if (key) {
-        const url = await s3.getPresignedUrl(key);
-        return { key, url };
-      }
-      // fallback: return stored URL
-      return { url: user.user_photo };
+      if (!user.user_photo_key) return null;
+      const url = await s3.getPresignedUrl(user.user_photo_key);
+      return { key: user.user_photo_key, url };
     } catch (err) {
       console.error(err);
     }
@@ -130,7 +108,9 @@ class UsersService {
       const key = `users/${userId}/${uuidv4()}${ext}`;
       await s3.uploadObject(key, file.buffer, file.mimetype);
       const publicUrl = await s3.getPresignedUrl(key);
-      const res = await pool.query('UPDATE users SET user_photo = $1 WHERE id = $2 RETURNING *', [publicUrl, userId]);
+      const res = await pool.query('UPDATE users SET user_photo_key = $1 WHERE id = $2 RETURNING *', [key, userId]);
+      // Attach the presigned URL for immediate use but persist only the key
+      if (res && res.rows && res.rows[0]) res.rows[0].user_photo = publicUrl;
       return res.rows[0];
     } catch (err) {
       console.error(err);
@@ -141,9 +121,8 @@ class UsersService {
     try {
       const existing = await this.getById(userId);
       if (!existing) return null;
-      if (existing.user_photo) {
-        const existingKey = parseKeyFromUrl(existing.user_photo);
-        if (existingKey) await s3.deleteObject(existingKey);
+      if (existing.user_photo_key) {
+        await s3.deleteObject(existing.user_photo_key);
       }
       return await this.createImage(userId, file);
     } catch (err) {
@@ -155,10 +134,10 @@ class UsersService {
     try {
       const existing = await this.getById(userId);
       if (!existing) return null;
-      if (!existing.user_photo) return null;
-      const existingKey = parseKeyFromUrl(existing.user_photo);
+      if (!existing.user_photo_key) return null;
+      const existingKey = existing.user_photo_key;
       if (existingKey) await s3.deleteObject(existingKey);
-      const res = await pool.query('UPDATE users SET user_photo = NULL WHERE id = $1 RETURNING *', [userId]);
+      const res = await pool.query('UPDATE users SET user_photo_key = NULL WHERE id = $1 RETURNING *', [userId]);
       return res.rows[0];
     } catch (err) {
       console.error(err);

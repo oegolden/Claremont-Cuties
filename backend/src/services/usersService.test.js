@@ -32,13 +32,12 @@ describe('UsersService image methods', () => {
     const userId = '1';
     const file = { originalname: 'pic.jpg', buffer: Buffer.from('abc'), mimetype: 'image/jpeg' };
     const signedUrl = 'https://signed.example.com/users/1/new.jpg';
-
     s3.uploadObject.mockResolvedValue({});
     s3.getPresignedUrl.mockResolvedValue(signedUrl);
 
     pool.query.mockImplementation((sql, params) => {
-      if (sql.startsWith('UPDATE users SET user_photo')) {
-        return { rows: [{ id: userId, user_photo: signedUrl }] };
+      if (sql.startsWith('UPDATE users SET user_photo_key')) {
+        return { rows: [{ id: userId, user_photo_key: 'users/1/new.jpg' }] };
       }
       return { rows: [] };
     });
@@ -46,27 +45,28 @@ describe('UsersService image methods', () => {
     const res = await service.createImage(userId, file);
     expect(s3.uploadObject).toHaveBeenCalled();
     expect(s3.getPresignedUrl).toHaveBeenCalled();
-    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE users SET user_photo'), [signedUrl, userId]);
-    expect(res).toEqual({ id: userId, user_photo: signedUrl });
+    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE users SET user_photo_key'), [expect.any(String), userId]);
+    expect(res).toEqual({ id: userId, user_photo_key: 'users/1/new.jpg', user_photo: signedUrl });
   });
 
-  test('getImage returns presigned url when key parsed', async () => {
+  test('getImage returns presigned url from stored key', async () => {
     const userId = '2';
-    const storedUrl = 'https://example.com/users/2/existing.jpg';
+    const storedKey = 'users/2/existing.jpg';
     const presigned = 'https://signed.example.com/users/2/existing.jpg';
 
-    pool.query.mockResolvedValue({ rows: [{ id: userId, user_photo: storedUrl }] });
+    pool.query.mockResolvedValue({ rows: [{ id: userId, user_photo_key: storedKey }] });
     s3.getPresignedUrl.mockResolvedValue(presigned);
 
     const res = await service.getImage(userId);
     expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('SELECT * FROM users WHERE id ='), [userId]);
-    expect(s3.getPresignedUrl).toHaveBeenCalledWith('users/2/existing.jpg');
-    expect(res).toEqual({ key: 'users/2/existing.jpg', url: presigned });
+    expect(s3.getPresignedUrl).toHaveBeenCalledWith(storedKey);
+    expect(res).toEqual({ key: storedKey, url: presigned });
   });
 
   test('updateImage deletes previous object and uploads new one', async () => {
     const userId = '3';
-    const oldUrl = 'https://example.com/users/3/old.jpg';
+    const oldKey = 'users/3/old.jpg';
+    const newKey = 'users/3/new.jpg';
     const newSigned = 'https://signed.example.com/users/3/new.jpg';
     const file = { originalname: 'new.png', buffer: Buffer.from('xyz'), mimetype: 'image/png' };
 
@@ -74,10 +74,10 @@ describe('UsersService image methods', () => {
     // Second call: UPDATE inside createImage
     pool.query.mockImplementation((sql, params) => {
       if (sql.startsWith('SELECT * FROM users WHERE id')) {
-        return { rows: [{ id: userId, user_photo: oldUrl }] };
+        return { rows: [{ id: userId, user_photo_key: oldKey }] };
       }
-      if (sql.startsWith('UPDATE users SET user_photo')) {
-        return { rows: [{ id: userId, user_photo: newSigned }] };
+      if (sql.startsWith('UPDATE users SET user_photo_key')) {
+        return { rows: [{ id: userId, user_photo_key: newKey }] };
       }
       return { rows: [] };
     });
@@ -87,21 +87,21 @@ describe('UsersService image methods', () => {
     s3.getPresignedUrl.mockResolvedValue(newSigned);
 
     const res = await service.updateImage(userId, file);
-    expect(s3.deleteObject).toHaveBeenCalledWith('users/3/old.jpg');
+    expect(s3.deleteObject).toHaveBeenCalledWith(oldKey);
     expect(s3.uploadObject).toHaveBeenCalled();
-    expect(res).toEqual({ id: userId, user_photo: newSigned });
+    expect(res).toEqual({ id: userId, user_photo_key: newKey, user_photo: newSigned });
   });
 
-  test('deleteImage removes s3 object and clears user_photo', async () => {
+  test('deleteImage removes s3 object and clears user_photo_key', async () => {
     const userId = '4';
-    const oldUrl = 'https://example.com/users/4/old.jpg';
+    const oldKey = 'users/4/old.jpg';
 
     pool.query.mockImplementation((sql, params) => {
       if (sql.startsWith('SELECT * FROM users WHERE id')) {
-        return { rows: [{ id: userId, user_photo: oldUrl }] };
+        return { rows: [{ id: userId, user_photo_key: oldKey }] };
       }
-      if (sql.startsWith('UPDATE users SET user_photo = NULL')) {
-        return { rows: [{ id: userId, user_photo: null }] };
+      if (sql.startsWith('UPDATE users SET user_photo_key = NULL')) {
+        return { rows: [{ id: userId, user_photo_key: null }] };
       }
       return { rows: [] };
     });
@@ -109,8 +109,8 @@ describe('UsersService image methods', () => {
     s3.deleteObject.mockResolvedValue({});
 
     const res = await service.deleteImage(userId);
-    expect(s3.deleteObject).toHaveBeenCalledWith('users/4/old.jpg');
-    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE users SET user_photo = NULL'), [userId]);
-    expect(res).toEqual({ id: userId, user_photo: null });
+    expect(s3.deleteObject).toHaveBeenCalledWith(oldKey);
+    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE users SET user_photo_key = NULL'), [userId]);
+    expect(res).toEqual({ id: userId, user_photo_key: null });
   });
 });
