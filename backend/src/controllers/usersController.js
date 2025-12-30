@@ -26,10 +26,34 @@ class UsersController {
     }
   }
 
+  // GET /users/:id/image
+  async getImage(req, res, next) {
+    try {
+      const image = await this.service.getImage(req.params.id);
+      if (!image) return res.status(404).json({ error: 'Image not found' });
+      return res.json(image);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async create(req, res, next) {
     try {
       const user = await this.service.create(req.body);
       return res.status(201).json(user);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // POST /users/:id/image
+  async createImage(req, res, next) {
+    try {
+      const file = req.file;
+      if (!file) return res.status(400).json({ error: 'Image file is required' });
+      const updated = await this.service.createImage(req.params.id, file);
+      if (!updated) return res.status(404).json({ error: 'User not found' });
+      return res.status(201).json(updated);
     } catch (err) {
       next(err);
     }
@@ -45,11 +69,35 @@ class UsersController {
     }
   }
 
+  // PUT /users/:id/image
+  async updateImage(req, res, next) {
+    try {
+      const file = req.file;
+      if (!file) return res.status(400).json({ error: 'Image file is required' });
+      const updated = await this.service.updateImage(req.params.id, file);
+      if (!updated) return res.status(404).json({ error: 'User not found' });
+      res.json(updated);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async delete(req, res, next) {
     try {
       const ok = await this.service.remove(req.params.id);
       if (!ok) return res.status(404).json({ error: 'User not found' });
       res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // DELETE /users/:id/image
+  async deleteImage(req, res, next) {
+    try {
+      const deleted = await this.service.deleteImage(req.params.id);
+      if (!deleted) return res.status(404).json({ error: 'User or image not found' });
+      return res.status(204).send();
     } catch (err) {
       next(err);
     }

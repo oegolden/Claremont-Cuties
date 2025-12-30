@@ -38,8 +38,25 @@ const Messages = () => {
         if (!res.ok) return;
         const data = await res.json();
         const started = Array.isArray(data) ? data.filter(m => m.start) : [];
-        setConversations(started);
-        if (!activeTo && started.length > 0) setActiveTo(started[0].id);
+        // enrich started matches with presigned photo URLs when available
+        const enrichPromises = started.map(async (m) => {
+          if (m.user_photo) return m;
+          if (m.user_photo_key) {
+            try {
+              const r = await fetch(`/api/users/${m.id}/image`, { headers: { Authorization: `Bearer ${token}` } });
+              if (r.ok) {
+                const json = await r.json();
+                if (json && json.url) m.user_photo = json.url;
+              }
+            } catch (e) {
+              // ignore
+            }
+          }
+          return m;
+        });
+        const startedWithPhotos = await Promise.all(enrichPromises);
+        setConversations(startedWithPhotos);
+        if (!activeTo && startedWithPhotos.length > 0) setActiveTo(startedWithPhotos[0].id);
       } catch (e) {
         console.error('Error loading conversations', e);
       } finally {
@@ -120,7 +137,7 @@ const Messages = () => {
   };
 
   const getImgUrl = (m) => {
-    return m.avatar_url || m.photo || m.profile_image || m.image || m.avatar || null;
+    return m.user_photo || m.avatar_url || m.photo || m.profile_image || m.image || m.avatar || null;
   };
 
   const getInitials = (name) => {

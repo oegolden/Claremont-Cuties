@@ -35,7 +35,24 @@ const Matches = () => {
 
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
-          setMatches(data);
+          // enrich matches with presigned photo URLs when available
+          const token = localStorage.getItem('accessToken');
+          const enriched = await Promise.all(data.map(async (m) => {
+            if (m.user_photo) return m;
+            if (m.user_photo_key) {
+              try {
+                const r = await fetch(`/api/users/${m.id}/image`, { headers: { Authorization: `Bearer ${token}` } });
+                if (r.ok) {
+                  const json = await r.json();
+                  if (json && json.url) m.user_photo = json.url;
+                }
+              } catch (e) {
+                // ignore
+              }
+            }
+            return m;
+          }));
+          setMatches(enriched);
           setError(null);
         } else {
           setMatches([]);
@@ -60,7 +77,7 @@ const Matches = () => {
   const safeText = (s) => (s === null || s === undefined) ? '' : String(s);
 
   const MatchCard = ({ match }) => {
-    const imgUrl = match.avatar_url || match.photo || match.profile_image || null;
+    const imgUrl = match.user_photo || match.avatar_url || match.photo || match.profile_image || null;
     const initials = (safeText(match.name) || 'U')
       .split(/\s+/)
       .map(s => s[0])
