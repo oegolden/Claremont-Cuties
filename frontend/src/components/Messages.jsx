@@ -258,7 +258,17 @@ const Messages = () => {
             </div>
 
             <div className="chat-input">
-              <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a message" />
+              <input
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Type a message"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+              />
               <button className="btn-primary" onClick={sendMessage}>Send</button>
             </div>
           </div>
