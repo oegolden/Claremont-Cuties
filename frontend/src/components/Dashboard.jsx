@@ -224,11 +224,21 @@ const Dashboard = () => {
       const token = localStorage.getItem('accessToken');
       const fd = new FormData();
       fd.append('image', photoFile);
-      const resp = await fetch(`/api/users/${user.id}/image`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: fd
-      });
+      let resp;
+      // Use the stored S3 key to decide whether to create or replace the image
+      if (user && (user.user_photo_key || user.user_photo)) {
+        resp = await fetch(`/api/users/${user.id}/image`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+      } else {
+        resp = await fetch(`/api/users/${user.id}/image`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: fd
+        });
+      }
       if (!resp.ok) throw new Error('Upload failed');
       const updated = await resp.json();
       // updated may include user_photo (presigned URL)
