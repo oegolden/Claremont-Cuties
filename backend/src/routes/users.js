@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const UsersController = require('../controllers/usersController');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 1 * 1024 * 1024 } });
 
 const router = express.Router();
 const ctrl = new UsersController();
