@@ -57,8 +57,10 @@ router.get(
   }
 );
 
+const { authenticateToken } = require('../middleware/jwtAuthentication');
+
 // Get current user info
-router.get('/me', require('../middleware/jwtAuthentication'), async (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
   try {
     const { pool } = require('../config/db');
     const result = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);

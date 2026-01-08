@@ -1,7 +1,9 @@
 const express = require('express');
+const { authenticateToken } = require('../middleware/jwtAuthentication');
 const MatchesController = require('../controllers/matchesController');
 
 const router = express.Router();
+router.use(authenticateToken);
 const ctrl = new MatchesController();
 
 // list matches (path param: /:userId)

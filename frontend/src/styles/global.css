@@ -399,6 +399,138 @@ body {
     transition: background-color 0.2s ease;
 }
 
+/* Emoji picker portal and items */
+.emoji-picker-portal {
+    position: relative;
+}
+
+.emoji-panel {
+    font-family: inherit;
+}
+
+.emoji-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: background 0.12s ease, transform 0.06s ease;
+}
+.emoji-item:hover,
+.emoji-item:focus {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.emoji-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 6px 8px;
+}
+
+/* Small tweak for portal container to avoid pointer issues */
+.emoji-picker-portal > .emoji-panel {
+    pointer-events: auto;
+}
+
+/* Messaging UI */
+.messages-page {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 64px);
+}
+
+.conversations-list {
+    width: 300px;
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    overflow-y: auto;
+}
+
+.conv-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.conv-item.active {
+    background: #fff1f6;
+}
+
+.conv-avatar img, .conv-avatar .avatar-initials {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.messages-list {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.msg {
+    max-width: 70%;
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+.msg.sent {
+    align-self: flex-end;
+    background: #ffedf4;
+}
+.msg.received {
+    align-self: flex-start;
+    background: #f2f6ff;
+}
+
+.msg-sender { font-size: 12px; color: #444; margin-bottom: 6px; }
+.msg-text { font-size: 14px; color: #111; }
+.msg-meta { font-size: 12px; color: #666; margin-top: 6px; display:flex; align-items:center; gap:8px }
+.msg-status { margin-left: 6px; padding: 2px 6px; border-radius: 8px; background: rgba(0,0,0,0.03); font-size: 12px; color: #444 }
+
+.chat-input { padding: 12px; display: flex; gap: 12px; border-top: 1px solid #eee; }
+.chat-input textarea { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #e9e9e9; resize: none }
+.btn-primary { background: #ff7aa2; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer }
+
+/* Emoji picker styles */
+.emoji-picker { position: relative; display: inline-block; }
+.emoji-button { background: transparent; border: none; font-size: 20px; cursor: pointer; padding: 6px; }
+.emoji-panel { position: absolute; bottom: 40px; right: 0; background: white; border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-radius: 8px; padding: 8px; display: grid; grid-template-columns: repeat(6, 32px); gap: 6px; z-index: 200; }
+.emoji-item { background: transparent; border: none; cursor: pointer; font-size: 20px; padding: 4px; }
+.emoji-item:hover { background: rgba(0,0,0,0.03); border-radius: 6px; }
+
 .save-button:hover {
     background: #ff6b94;
 }

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { connectSocket, disconnectSocket } from '../utils/socket';
 
 const AuthContext = createContext();
 
@@ -34,6 +35,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
+    // connect socket after setting user
+    const token = getToken();
+    if (token) {
+      try {
+        connectSocket(token);
+      } catch (e) {
+        console.error('Error connecting socket:', e);
+      }
+    }
   };
 
   const validateAndGetUser = async () => {
@@ -83,6 +93,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
+      // disconnect socket when logging out
+      try { disconnectSocket(); } catch (e) {}
       removeToken();
     }
   };
@@ -96,6 +108,11 @@ export const AuthProvider = ({ children }) => {
           const userData = JSON.parse(savedUser);
           setUser(userData);
           setIsAuthenticated(true);
+          // ensure socket is connected
+          const token = getToken();
+          if (token) {
+            try { connectSocket(token); } catch (e) { console.error('Socket connect failed', e); }
+          }
           // Validate token is still valid
           await validateAndGetUser();
         } catch (error) {
