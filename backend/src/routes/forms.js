@@ -1,5 +1,5 @@
 const express = require('express');
-const authenticateToken = require('../middleware/jwtAuthentication');
+const { authenticateToken } = require('../middleware/jwtAuthentication');
 const FormsController = require('../controllers/formsController');
 
 const router = express.Router();

@@ -89,7 +89,7 @@ const Navbar = () => {
                     </>
                   )
                 ) : (
-                  'Profile'
+                  'Log in'
                 )}
               </span>
             </button>

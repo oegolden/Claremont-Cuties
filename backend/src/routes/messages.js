@@ -1,7 +1,9 @@
 const express = require('express');
+const { authenticateToken } = require('../middleware/jwtAuthentication');
 const MessagesController = require('../controllers/messagesController');
 
 const router = express.Router();
+router.use(authenticateToken);
 const ctrl = new MessagesController();
 
 // conversation listing

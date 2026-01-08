@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import io from 'socket.io-client';
 import '../styles/global.css';
-
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || '';
+import { getSocket, emitDelivered, emitRead, onDelivered, onRead } from '../utils/socket';
+import { t } from '../utils/i18n';
+import EmojiPicker from './EmojiPicker';
 
 const Messages = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -19,6 +19,7 @@ const Messages = () => {
   const [text, setText] = useState('');
   const socketRef = useRef(null);
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (loading) return;
@@ -81,27 +82,41 @@ const Messages = () => {
   }, [activeTo, conversations]);
 
   useEffect(() => {
-    // connect socket
     if (!user) return;
-    const url = SOCKET_URL || window.location.origin;
-    const socket = io(url);
+    const socket = getSocket();
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    if (socket) {
       socket.emit('identify', user.id);
-    });
 
-    socket.on('message', (payload) => {
-      // show incoming messages if they belong to active conversation
-      setMessages(prev => {
-        const next = [...prev, payload];
-        return next.sort((a, b) => (Number(a.sequence || 0) - Number(b.sequence || 0)) || (new Date(a.sentAt || 0) - new Date(b.sentAt || 0)));
+      socket.on('message', (payload) => {
+        setMessages(prev => {
+          const next = [...prev, payload];
+          next.sort((a, b) => (Number(a.sequence || 0) - Number(b.sequence || 0)) || (new Date(a.sentAt || 0) - new Date(b.sentAt || 0)));
+          return next;
+        });
+
+        // auto-acknowledge delivery for incoming messages (if they have an id)
+        try {
+          if (payload && payload.id && String(payload.to) === String(user.id)) {
+            emitDelivered(payload.id);
+          }
+        } catch (e) {
+          // ignore
+        }
       });
-    });
 
-    return () => {
-      socket.disconnect();
-    };
+      // register receipt listeners
+      onDelivered((data) => {
+        if (!data || !data.messageId) return;
+        setMessages(prev => prev.map(m => m.id === data.messageId ? { ...m, status: 'delivered', deliveredAt: data.delivered_at || new Date().toISOString() } : m));
+      });
+
+      onRead((data) => {
+        if (!data || !data.messageId) return;
+        setMessages(prev => prev.map(m => m.id === data.messageId ? { ...m, status: 'read', readAt: data.read_at || new Date().toISOString() } : m));
+      });
+    }
   }, [user]);
 
   useEffect(() => {
@@ -198,11 +213,12 @@ const Messages = () => {
           text: inserted.body || body,
           sentAt: inserted.timestamp || new Date().toISOString(),
           sequence: inserted.sequence,
-          id: inserted.id
+          id: inserted.id,
+          status: inserted.status || 'sent'
         };
         // emit for realtime delivery
         socketRef.current.emit('message', payload);
-        // append locally
+        // append locally with optimistic status
         setMessages(prev => [...prev, payload]);
         setText('');
       } catch (e) {
@@ -250,28 +266,53 @@ const Messages = () => {
                     <div key={msg.id || `${msg.sequence}_${msg.sentAt}`} className={`msg ${String(msg.from) === String(user.id) ? 'sent' : 'received'}`}>
                       <div className="msg-sender">{senderName}</div>
                       <div className="msg-text">{msg.text}</div>
-                      <div className="msg-meta">{formatToPST(msg.sentAt)}</div>
+                      <div className="msg-meta">
+                        {formatToPST(msg.sentAt)}
+                        {String(msg.from) === String(user.id) && (
+                          <span className="msg-status">{t((msg.status || 'sent').toLowerCase())}</span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               <div ref={bottomRef} />
             </div>
 
-            <div className="chat-input">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Type a message"
-                rows={2}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-              />
-              <button className="btn-primary" onClick={sendMessage}>Send</button>
-            </div>
+                  <div className="chat-input">
+                    <textarea
+                      ref={inputRef}
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      placeholder={t('typeMessage')}
+                      rows={2}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <EmojiPicker onSelect={(emoji) => {
+                        try {
+                          const el = inputRef.current;
+                          if (!el) return setText(prev => prev + emoji);
+                          const start = el.selectionStart || 0;
+                          const end = el.selectionEnd || 0;
+                          const next = text.slice(0, start) + emoji + text.slice(end);
+                          setText(next);
+                          // restore caret after emoji insertion
+                          requestAnimationFrame(() => {
+                            el.selectionStart = el.selectionEnd = start + emoji.length;
+                            el.focus();
+                          });
+                        } catch (e) {
+                          setText(prev => prev + emoji);
+                        }
+                      }} />
+                      <button className="btn-primary" onClick={sendMessage}>Send</button>
+                    </div>
+                  </div>
           </div>
         )}
       </section>

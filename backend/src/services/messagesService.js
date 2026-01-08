@@ -32,10 +32,10 @@ class MessagesService {
     async insertMessage(senderID, receiverID, body) {
         try {
             const res = await this.pool.query(
-                `INSERT INTO messages (sender_id, receiver_id, timestamp, body, sequence)
-                 VALUES ($1, $2, now(), $3, COALESCE((SELECT max(sequence) FROM messages WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1))), 0) + 1)
+                `INSERT INTO messages (sender_id, receiver_id, timestamp, body, sequence, status)
+                 VALUES ($1, $2, now(), $3, COALESCE((SELECT max(sequence) FROM messages WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1))), 0) + 1, $4)
                  RETURNING *`,
-                [senderID, receiverID, body]
+                [senderID, receiverID, body, 'sent']
             );
             return res.rows[0];
         } catch (err) {
@@ -77,3 +77,34 @@ class MessagesService {
 }
 
 module.exports = MessagesService;
+
+// Extend service with basic delivery/read marking methods
+MessagesService.prototype.markDelivered = async function(messageID) {
+    try {
+        const res = await this.pool.query("UPDATE messages SET status = 'delivered', delivered_at = now() WHERE id = $1 RETURNING *", [messageID]);
+        return res.rows[0] || null;
+    } catch (err) {
+        console.warn('markDelivered failed (schema may be missing delivered_at/status):', err.message || err);
+        return null;
+    }
+}
+
+MessagesService.prototype.markRead = async function(messageID) {
+    try {
+        const res = await this.pool.query("UPDATE messages SET status = 'read', read_at = now() WHERE id = $1 RETURNING *", [messageID]);
+        return res.rows[0] || null;
+    } catch (err) {
+        console.warn('markRead failed (schema may be missing read_at/status):', err.message || err);
+        return null;
+    }
+}
+
+MessagesService.prototype.getUndeliveredForUser = async function(receiverID) {
+    try {
+        const res = await this.pool.query("SELECT * FROM messages WHERE receiver_id = $1 AND status = 'sent' ORDER BY sequence", [receiverID]);
+        return res.rows || [];
+    } catch (err) {
+        console.error('getUndeliveredForUser failed:', err.message || err);
+        return [];
+    }
+}
