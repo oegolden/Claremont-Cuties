@@ -26,7 +26,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -62,7 +62,7 @@ passport.use(
     {
       clientID: process.env.MICROSOFT_CLIENT_ID,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-      callbackURL: process.env.MICROSOFT_CALLBACK_URL,
+      callbackURL: process.env.MICROSOFT_CALLBACK_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com/auth/microsoft/callback',
       scope: ['user.read'],
     },
     async (accessToken, refreshToken, profile, done) => {
