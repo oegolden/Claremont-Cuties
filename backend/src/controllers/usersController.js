@@ -49,7 +49,9 @@ class UsersController {
   // POST /users/:id/image
   async createImage(req, res, next) {
     try {
+      console.log('UsersController.createImage called for user:', req.params.id);
       const file = req.file;
+      console.log('File received:', file ? file.originalname : 'No file');
       if (!file) return res.status(400).json({ error: 'Image file is required' });
       const updated = await this.service.createImage(req.params.id, file);
       if (!updated) return res.status(404).json({ error: 'User not found' });
@@ -104,23 +106,23 @@ class UsersController {
   }
 
   async login(req, res, next) {
-      try {
-        const {email, password} = req.body;
-        const user = await this.service.getByEmail(email);
-        if (user && await bcrypt.compare(password, user.password)) {
-          const accessToken = jwt.sign(
-            user,
-            process.env.ACCESS_TOKEN_SECRET,
-            {expiresIn: '1h'}
-          )
-          res.status(200).json({accessToken: accessToken, user: user});
-        } else {
-          return res.status(401).json({error: 'Invalid email or password'});
-        }
-      } catch (err) {
-        console.error(err);
+    try {
+      const { email, password } = req.body;
+      const user = await this.service.getByEmail(email);
+      if (user && await bcrypt.compare(password, user.password)) {
+        const accessToken = jwt.sign(
+          user,
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: '1h' }
+        )
+        res.status(200).json({ accessToken: accessToken, user: user });
+      } else {
+        return res.status(401).json({ error: 'Invalid email or password' });
       }
+    } catch (err) {
+      console.error(err);
     }
+  }
 }
 
 module.exports = UsersController;

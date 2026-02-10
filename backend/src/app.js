@@ -18,7 +18,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Security Middleware through helmet
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline needed for some React/Vite setups
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https://*.s3.amazonaws.com", "https://s3.amazonaws.com"],
+        connectSrc: ["'self'", "https://*.s3.amazonaws.com", "https://s3.amazonaws.com"], // Good practice for fetch/XHR
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'self'"],
+      },
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 // Serve React app static files
 const frontendPath = path.join(__dirname, '../../frontend/dist');
