@@ -1,4 +1,5 @@
-require('dotenv').config({ path: '../../.env' }); // Adjust path if needed
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const { S3Client, ListObjectsCommand } = require('@aws-sdk/client-s3');
 
 const REGION = process.env.AWS_REGION || 'us-east-1';
@@ -32,11 +33,15 @@ const s3client = new S3Client(clientConfig);
 
 async function test() {
     try {
-        console.log(`Attempting to list objects in bucket: ${BUCKET}...`);
-        const cmd = new ListObjectsCommand({ Bucket: BUCKET, MaxKeys: 1 });
+        const prefix = process.env.S3_KEY_PREFIX || '';
+        console.log(`Attempting to list objects in bucket: ${BUCKET} with prefix: '${prefix}'...`);
+        const cmd = new ListObjectsCommand({ Bucket: BUCKET, Prefix: prefix, MaxKeys: 10 });
         const res = await s3client.send(cmd);
         console.log('SUCCESS: S3 connection working.');
-        console.log('Object count (limit 1):', res.Contents ? res.Contents.length : 0);
+        console.log('Objects found:', res.Contents ? res.Contents.length : 0);
+        if (res.Contents) {
+            res.Contents.forEach(obj => console.log(' - ' + obj.Key));
+        }
     } catch (err) {
         console.error('FAILURE: S3 Error:');
         console.error(err);

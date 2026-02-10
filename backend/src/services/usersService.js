@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const s3 = require('../utils/s3');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const sharp = require('sharp');
 
 const BUCKET = process.env.S3_BUCKET;
 
@@ -105,14 +106,23 @@ class UsersService {
   async createImage(userId, file) {
     try {
       if (!file) throw new Error('File is required');
-      const ext = path.extname(file.originalname) || '';
+      // const ext = path.extname(file.originalname) || ''; // Original extension ignored, we convert to jpeg
+      const ext = '.jpeg';
       const prefix = process.env.S3_KEY_PREFIX || ''; // e.g. 'ouzp99cxbwpv/'
       // Ensure prefix ends with / if not empty
       const safePrefix = (prefix && !prefix.endsWith('/')) ? `${prefix}/` : prefix;
+
+      // Optimize image: Resize to max 800x800, convert to JPEG with 80% quality
+      const optimizedBuffer = await sharp(file.buffer)
+        .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+        .toFormat('jpeg', { quality: 80 })
+        .toBuffer();
+
+
       const key = `${safePrefix}users/${userId}/${uuidv4()}${ext}`;
 
-      console.log(`Uploading to S3 key: ${key}`);
-      await s3.uploadObject(key, file.buffer, file.mimetype);
+      console.log(`Uploading optimized image to S3 key: ${key}`);
+      await s3.uploadObject(key, optimizedBuffer, 'image/jpeg');
 
       const publicUrl = await s3.getPresignedUrl(key);
       const res = await pool.query('UPDATE users SET user_photo_key = $1 WHERE id = $2 RETURNING *', [key, userId]);

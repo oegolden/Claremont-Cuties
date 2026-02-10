@@ -31,6 +31,8 @@ class UsersController {
     try {
       const image = await this.service.getImage(req.params.id);
       if (!image) return res.status(404).json({ error: 'Image not found' });
+      // Cache the presigned URL for 5 minutes to reduce DB/S3 calls
+      res.set('Cache-Control', 'public, max-age=300');
       return res.json(image);
     } catch (err) {
       next(err);

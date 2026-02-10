@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const { user, isAuthenticated, loading, setUserData } = useAuth();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,14 +36,14 @@ const Dashboard = () => {
     }
 
     if (user) {
-      const campusOptions = ['HMC','Pitzer','Pomona','CMC','Scripps'];
-      const genderOptions = ['Woman','Man','Non-binary','Genderqueer/Genderfluid','Questioning','Prefer not to say'];
-      const orientationOptions = ['Heterosexual','Homosexual','Bisexual','Asexual','Pansexual'];
-      
+      const campusOptions = ['HMC', 'Pitzer', 'Pomona', 'CMC', 'Scripps'];
+      const genderOptions = ['Woman', 'Man', 'Non-binary', 'Genderqueer/Genderfluid', 'Questioning', 'Prefer not to say'];
+      const orientationOptions = ['Heterosexual', 'Homosexual', 'Bisexual', 'Asexual', 'Pansexual'];
+
       // Auto-detect campus from email if not set
       const guessCampusFromEmail = (email) => {
         if (!email) {
-            return '';
+          return '';
         }
         const e = String(email).toLowerCase();
         if (/\b(hmc)\b|hmc\.edu/.test(e)) {
@@ -70,7 +70,7 @@ const Dashboard = () => {
         const matchedOption = options.find(
           option => option.toLowerCase() === normalizedValue.toLowerCase()
         );
-        
+
         if (matchedOption) {
           return {
             select: matchedOption,
@@ -78,7 +78,7 @@ const Dashboard = () => {
             showOther: false
           };
         }
-        
+
         if (normalizedValue) {
           return {
             select: 'Other',
@@ -86,7 +86,7 @@ const Dashboard = () => {
             showOther: true
           };
         }
-        
+
         return {
           select: '',
           other: '',
@@ -127,8 +127,8 @@ const Dashboard = () => {
       // Parse social media accounts from JSON
       if (user.social_media_accounts) {
         try {
-          const parsed = typeof user.social_media_accounts === 'string' 
-            ? JSON.parse(user.social_media_accounts) 
+          const parsed = typeof user.social_media_accounts === 'string'
+            ? JSON.parse(user.social_media_accounts)
             : user.social_media_accounts;
           const accountsArray = Object.entries(parsed).map(([platform, url]) => {
             const username = url.split('/').pop() || '';
@@ -177,7 +177,7 @@ const Dashboard = () => {
       setShowGenderOther(genderData.showOther);
       setShowOrientationOther(orientationData.showOther);
       // fetch current photo presigned URL
-      (async function fetchPhoto(){
+      (async function fetchPhoto() {
         try {
           const token = localStorage.getItem('accessToken');
           const resp = await fetch(`/api/users/${user.id}/image`, {
@@ -211,6 +211,16 @@ const Dashboard = () => {
   const handleFileChange = (e) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
+
+    // Check file size (10MB limit)
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (f.size > MAX_SIZE) {
+      setSaveStatus({ message: 'File is too large. Max size is 10MB.', type: 'error' });
+      // Clear the input value so the user can retry with the same file if needed (though unlikely for size)
+      e.target.value = '';
+      return;
+    }
+
     setPhotoFile(f);
     const reader = new FileReader();
     reader.onload = () => setPhotoPreview(reader.result);
@@ -325,7 +335,7 @@ const Dashboard = () => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSaveStatus({ message: '', type: '' });
-    
+
     try {
       // Convert social media accounts to JSON format
       const socialMediaObj = {};
@@ -371,17 +381,17 @@ const Dashboard = () => {
       }
 
       const updatedUser = await response.json();
-      
+
       // Update user in auth context and localStorage
       const updatedUserData = { ...user, ...updatedUser };
       localStorage.setItem('user', JSON.stringify(updatedUserData));
-      
+
       setSaveStatus({ message: 'Profile saved successfully!', type: 'success' });
-      
+
       setTimeout(() => {
         setSaveStatus({ message: '', type: '' });
       }, 3000);
-      
+
     } catch (error) {
       console.error('Error saving profile:', error);
       setSaveStatus({ message: 'Failed to save profile. Please try again.', type: 'error' });
@@ -400,7 +410,7 @@ const Dashboard = () => {
         <div className="dashboard-header">
           <h1>Your Dashboard</h1>
         </div>
-        
+
         <div className="dashboard-content">
           <div className="profile-section">
             <h2 className="section-title">Your Profile</h2>
@@ -639,7 +649,7 @@ const Dashboard = () => {
               <button type="submit" className="save-button">
                 Save Profile
               </button>
-              
+
               {saveStatus.message && (
                 <div style={{
                   marginTop: '16px',
