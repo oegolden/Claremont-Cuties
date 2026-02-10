@@ -30,8 +30,23 @@ async function uploadObject(key, buffer, contentType) {
 
 async function deleteObject(key) {
   if (!BUCKET) throw new Error('S3_BUCKET not configured');
-  const cmd = new DeleteObjectCommand({ Bucket: BUCKET, Key: key });
-  return await s3client.send(cmd);
+  try {
+    const cmd = new DeleteObjectCommand({ Bucket: BUCKET, Key: key });
+    await s3client.send(cmd);
+    return true;
+  } catch (err) {
+    // If the object doesn't exist, we consider the deletion successful (idempotent)
+    if (err.name === 'NoSuchKey' || errCode(err) === 'NoSuchKey') {
+      console.warn(`S3 Delete: Object ${key} not found, ignoring.`);
+      return true;
+    }
+    console.error(`S3 Delete Error for ${key}:`, err);
+    throw err;
+  }
+}
+
+function errCode(err) {
+  return err.Code || (err.$metadata && err.$metadata.httpStatusCode === 404 ? 'NoSuchKey' : null);
 }
 
 async function getPresignedUrl(key, expiresInSeconds = 60 * 60) {

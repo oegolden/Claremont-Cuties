@@ -104,13 +104,19 @@ class UsersService {
 
   async createImage(userId, file) {
     try {
+      if (!file) throw new Error('File is required');
       const ext = path.extname(file.originalname) || '';
       const prefix = process.env.S3_KEY_PREFIX || ''; // e.g. 'ouzp99cxbwpv/'
-      const key = `${prefix}users/${userId}/${uuidv4()}${ext}`;
+      // Ensure prefix ends with / if not empty
+      const safePrefix = (prefix && !prefix.endsWith('/')) ? `${prefix}/` : prefix;
+      const key = `${safePrefix}users/${userId}/${uuidv4()}${ext}`;
+
+      console.log(`Uploading to S3 key: ${key}`);
       await s3.uploadObject(key, file.buffer, file.mimetype);
+
       const publicUrl = await s3.getPresignedUrl(key);
       const res = await pool.query('UPDATE users SET user_photo_key = $1 WHERE id = $2 RETURNING *', [key, userId]);
-      // Attach the presigned URL for immediate use but persist only the key
+
       if (res && res.rows && res.rows[0]) res.rows[0].user_photo = publicUrl;
       return res.rows[0];
     } catch (err) {
@@ -121,14 +127,19 @@ class UsersService {
 
   async updateImage(userId, file) {
     try {
+      // Best effort delete of existing image
       const existing = await this.getById(userId);
-      if (!existing) return null;
-      if (existing.user_photo_key) {
-        await s3.deleteObject(existing.user_photo_key);
+      if (existing && existing.user_photo_key) {
+        try {
+          await s3.deleteObject(existing.user_photo_key);
+        } catch (ignore) {
+          console.warn('Failed to delete old image during update, proceeding anyway:', ignore.message);
+        }
       }
       return await this.createImage(userId, file);
     } catch (err) {
-      console.error(err);
+      console.error('UsersService.updateImage Error:', err);
+      throw err;
     }
   }
 
@@ -136,13 +147,21 @@ class UsersService {
     try {
       const existing = await this.getById(userId);
       if (!existing) return null;
-      if (!existing.user_photo_key) return null;
-      const existingKey = existing.user_photo_key;
-      if (existingKey) await s3.deleteObject(existingKey);
+
+      if (existing.user_photo_key) {
+        try {
+          await s3.deleteObject(existing.user_photo_key);
+        } catch (e) {
+          console.warn('S3 delete failed but clearing DB anyway:', e.message);
+        }
+      }
+
+      // Always clear the key from DB, even if S3 delete failed (self-healing)
       const res = await pool.query('UPDATE users SET user_photo_key = NULL WHERE id = $1 RETURNING *', [userId]);
       return res.rows[0];
     } catch (err) {
-      console.error(err);
+      console.error('UsersService.deleteImage Error:', err);
+      throw err;
     }
   }
 
