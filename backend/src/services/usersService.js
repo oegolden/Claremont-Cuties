@@ -105,7 +105,8 @@ class UsersService {
   async createImage(userId, file) {
     try {
       const ext = path.extname(file.originalname) || '';
-      const key = `users/${userId}/${uuidv4()}${ext}`;
+      const prefix = process.env.S3_KEY_PREFIX || ''; // e.g. 'ouzp99cxbwpv/'
+      const key = `${prefix}users/${userId}/${uuidv4()}${ext}`;
       await s3.uploadObject(key, file.buffer, file.mimetype);
       const publicUrl = await s3.getPresignedUrl(key);
       const res = await pool.query('UPDATE users SET user_photo_key = $1 WHERE id = $2 RETURNING *', [key, userId]);
