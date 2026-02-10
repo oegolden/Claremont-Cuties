@@ -24,10 +24,10 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline needed for some React/Vite setups
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https://*.s3.amazonaws.com", "https://s3.amazonaws.com"],
         connectSrc: ["'self'", "https://*.s3.amazonaws.com", "https://s3.amazonaws.com"], // Good practice for fetch/XHR
-        fontSrc: ["'self'"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'self'"],
