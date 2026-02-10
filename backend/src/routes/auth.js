@@ -3,6 +3,10 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
+const frontendURL = (process.env.FRONTEND_URL && !process.env.FRONTEND_URL.includes('localhost'))
+  ? process.env.FRONTEND_URL
+  : 'https://claremont-cuties-34c7fbefb585.herokuapp.com';
+
 // Google OAuth Routes
 router.get(
   '/google',
@@ -16,7 +20,7 @@ router.get(
   (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user, info) => {
       if (err || !user) {
-        return res.redirect(`${process.env.FRONTEND_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com'}/login?error=access_denied`);
+        return res.redirect(`${frontendURL}/login?error=access_denied`);
       }
 
       const token = jwt.sign(
@@ -25,7 +29,7 @@ router.get(
         { expiresIn: '7d' }
       );
 
-      res.redirect(`${process.env.FRONTEND_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com'}/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, name: user.name || user.displayName }))}`);
+      res.redirect(`${frontendURL}/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, name: user.name || user.displayName }))}`);
     })(req, res, next);
   }
 );
@@ -43,7 +47,7 @@ router.get(
   (req, res, next) => {
     passport.authenticate('microsoft', { session: false }, (err, user, info) => {
       if (err || !user) {
-        return res.redirect(`${process.env.FRONTEND_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com'}/login?error=access_denied`);
+        return res.redirect(`${frontendURL}/login?error=access_denied`);
       }
 
       const token = jwt.sign(
@@ -52,7 +56,7 @@ router.get(
         { expiresIn: '7d' }
       );
 
-      res.redirect(`${process.env.FRONTEND_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com'}/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, name: user.name || user.displayName }))}`);
+      res.redirect(`${frontendURL}/login?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify({ id: user.id, email: user.email, name: user.name || user.displayName }))}`);
     })(req, res, next);
   }
 );
