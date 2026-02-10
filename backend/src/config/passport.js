@@ -1,5 +1,8 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+const googleCallbackURL = process.env.GOOGLE_CALLBACK_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com/auth/google/callback';
+console.log('Google Callback URL:', googleCallbackURL);
 const MicrosoftStrategy = require('passport-microsoft').Strategy;
 const { pool } = require('./db');
 
@@ -26,7 +29,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://claremont-cuties-34c7fbefb585.herokuapp.com/auth/google/callback',
+      callbackURL: googleCallbackURL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
