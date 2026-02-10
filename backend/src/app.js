@@ -15,13 +15,13 @@ const healthRoutes = require('./routes/index');
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); 
+app.use(cookieParser());
 
 // Security Middleware through helmet
 app.use(helmet());
 
 // Serve React app static files
-const frontendPath = path.join(__dirname, '../../frontend');
+const frontendPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendPath));
 
 app.use(
