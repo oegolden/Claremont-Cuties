@@ -31,8 +31,8 @@ class UsersController {
     try {
       const image = await this.service.getImage(req.params.id);
       if (!image) return res.status(404).json({ error: 'Image not found' });
-      // Cache the presigned URL for 5 minutes to reduce DB/S3 calls
-      res.set('Cache-Control', 'public, max-age=300');
+      // Disable caching for the API endpoint so updates are instant (browser still caches the unique S3 URL)
+      res.set('Cache-Control', 'no-store');
       return res.json(image);
     } catch (err) {
       next(err);
