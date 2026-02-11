@@ -360,14 +360,18 @@ const Quiz = () => {
   };
 
   return (
-    <div className="quiz-container">
+    <div className="quiz-container quiz-container--flower">
       <ProgressBar progress={progress} />
-      <Question
-        key={question.id}
-        question={question}
-        value={answers[question.id]}
-        onChange={handleAnswer}
-      />
+      <div className="quiz-flower-frame">
+        <div className="quiz-flower-content">
+          <Question
+            key={question.id}
+            question={question}
+            value={answers[question.id]}
+            onChange={handleAnswer}
+          />
+        </div>
+      </div>
       <div className="quiz-nav">
         <button onClick={handleBack} disabled={current === 0} style={{fontFamily: 'Albert Sans'}}>
           Back

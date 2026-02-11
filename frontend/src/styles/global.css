@@ -1123,12 +1123,40 @@ body {
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   padding: 2rem 1.5rem 1.5rem 1.5rem;
 }
+.quiz-container--flower {
+    background: transparent;
+    box-shadow: none;
+    padding: 1.5rem 1rem 2rem;
+}
+.quiz-flower-frame {
+    width: 100%;
+    background-image: url("/assets/flowerQuiz.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    padding: 3rem 2.5rem;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.quiz-flower-content {
+    width: 100%;
+    max-width: 380px;
+}
+.quiz-flower-frame .question-block {
+    margin: 0;
+}
 .progress-bar-wrapper {
   margin-bottom: 1.5rem;
 }
-.question-block h2 {
+.question-block {
+    margin: 2rem 0;
+}
+.question-title {
   margin-bottom: 1rem;
   font-weight: 500;
+    font-size: 1.2rem;
 }
 .quiz-nav {
   display: flex;
@@ -1148,6 +1176,13 @@ body {
 .quiz-nav button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .quiz-flower-frame {
+        padding: 2.5rem 1.5rem;
+        min-height: 360px;
+    }
 }
 
 .custom-checkbox {

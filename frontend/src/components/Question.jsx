@@ -155,8 +155,8 @@ const Question = ({ question, value, onChange }) => {
   }
 
   return (
-    <div className="question-block" style={{ margin: "2rem 0" }}>
-      <h2 style={{ fontSize: "1.2rem" }}>{question.question}</h2>
+    <div className="question-block">
+      <h2 className="question-title">{question.question}</h2>
       {input}
     </div>
   );
