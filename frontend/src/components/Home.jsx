@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import ProgressBar from './ProgressBar';
 
 const Home = () => {
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const [hasStartedMatch, setHasStartedMatch] = useState(false);
 
   useEffect(() => {
@@ -75,12 +77,33 @@ const Home = () => {
             <div className="todo-progress-meta">{completedTasks} of {totalTasks} complete</div>
             <ProgressBar progress={progressValue} />
             <ul className="todo-list home-todo-list">
-              {homeTasks.map((task) => (
-                <li key={task.id} className={`todo-item home-todo-item${task.complete ? ' completed' : ''}`}>
-                  <div className="todo-label">{task.label}</div>
-                  {task.complete && <span className="todo-badge">done</span>}
-                </li>
-              ))}
+              {homeTasks.map((task) => {
+                const getRoute = () => {
+                  switch (task.id) {
+                    case 'profile':
+                      return '/dashboard';
+                    case 'quiz':
+                      return '/quiz';
+                    case 'message':
+                      return task.complete ? '/messages' : null;
+                    default:
+                      return null;
+                  }
+                };
+                const route = getRoute();
+                
+                return (
+                  <li 
+                    key={task.id} 
+                    className={`todo-item home-todo-item${task.complete ? ' completed' : ''}${route ? ' clickable' : ''}`}
+                    onClick={() => route && navigate(route)}
+                    style={route ? { cursor: 'pointer' } : {}}
+                  >
+                    <div className="todo-label">{task.label}</div>
+                    {task.complete && <span className="todo-badge">done</span>}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
