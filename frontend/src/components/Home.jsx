@@ -1,23 +1,88 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-
-// TODO: Add a checklist/onboarding steps for users
+import ProgressBar from './ProgressBar';
 
 const Home = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const [hasStartedMatch, setHasStartedMatch] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) {
+      setHasStartedMatch(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchMatches = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`/api/matches/${user.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        const started = Array.isArray(data) ? data.some(match => match.start) : false;
+        if (isMounted) setHasStartedMatch(started);
+      } catch (err) {
+        if (isMounted) setHasStartedMatch(false);
+      }
+    };
+
+    fetchMatches();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, user]);
+
+  const isFilled = (value) => Boolean(String(value ?? '').trim());
+  const profileComplete = Boolean(
+    isAuthenticated && user &&
+    isFilled(user.name) &&
+    isFilled(user.age) &&
+    isFilled(user.campus) &&
+    isFilled(user.year) &&
+    isFilled(user.gender) &&
+    isFilled(user.sexual_orientation) &&
+    Boolean(user.user_photo)
+  );
+
+  const quizComplete = Boolean(isAuthenticated && user && user.form_id);
+
+  const homeTasks = [
+    { id: 'profile', label: 'set up profile', complete: profileComplete },
+    { id: 'quiz', label: 'take the matching quiz', complete: quizComplete },
+    { id: 'message', label: 'message a match', complete: hasStartedMatch }
+  ];
+
+  const totalTasks = homeTasks.length;
+  const completedTasks = homeTasks.filter(task => task.complete).length;
+  const progressValue = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <main className="main-content">
+    <main className="main-content home-main">
       <div className="home-container">
-        <h1>Welcome to Claremont Cuties</h1>
-        
-        <div className="home-content">
-          {isAuthenticated ? (
-            <p>Visit your <Link to="/dashboard">dashboard</Link> to manage your profile before finding matches and take the <Link to="/quiz">matching quiz</Link>!</p>
-          ) : (
-            <p>This is your home page. <Link to="/login">Sign in</Link> to access your profile and matches.</p>
-          )}
+        <div className="home-frame">
+          <div className="home-art" aria-hidden="true">
+            <img className="home-doily" src="/assets/doily.png" alt="" />
+            <img className="home-envelope" src="/assets/envelope.png" alt="" />
+            <img className="home-logo" src="/assets/logo.png" alt="" />
+          </div>
+
+          <div className="todo-section home-todo-card">
+            <h2 className="section-title">to do list</h2>
+            <div className="todo-progress-meta">{completedTasks} of {totalTasks} complete</div>
+            <ProgressBar progress={progressValue} />
+            <ul className="todo-list home-todo-list">
+              {homeTasks.map((task) => (
+                <li key={task.id} className={`todo-item home-todo-item${task.complete ? ' completed' : ''}`}>
+                  <div className="todo-label">{task.label}</div>
+                  {task.complete && <span className="todo-badge">done</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </main>
