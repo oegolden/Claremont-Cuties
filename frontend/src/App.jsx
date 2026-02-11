@@ -25,7 +25,6 @@ function App() {
             <Route path="/quiz-confirmation" element={<QuizConfirmation />} />
             <Route path="/matches" element={<Matches />} />
             <Route path="/messages" element={<Messages />} />
-            <Route path="/faq" element={<div style={{padding: '20px', textAlign: 'center'}}>FAQ page coming soon!</div>} />
           </Routes>
         </div>
       </Router>

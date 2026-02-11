@@ -67,9 +67,6 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            <Link className="nav-profile-btn" to="/faq">
-              FAQ
-            </Link>
           </div>
           <div className="nav-profile">
             <button className="nav-profile-btn" onClick={handleProfileClick}>
