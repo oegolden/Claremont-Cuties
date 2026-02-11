@@ -6,32 +6,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
-  
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  
-  useEffect(() => {
-    const deadline = new Date('February 6, 2026 23:59:00').getTime();
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const difference = deadline - now;
-      
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((difference % (1000 * 60)) / 1000)
-        });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      }
-    };
-    
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <main className="main-content">
@@ -65,8 +39,3 @@ const Home = () => {
           )}
         </div>
       </div>
-    </main>
-  );
-};
-
-export default Home;
