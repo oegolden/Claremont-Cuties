@@ -1124,14 +1124,13 @@ body {
   padding: 2rem 1.5rem 1.5rem 1.5rem;
 }
 .quiz-container--flower {
+    max-width: 750px;
     background: transparent;
     box-shadow: none;
     padding: 1.5rem 1rem 2rem;
 }
 .quiz-flower-frame {
-    width: 150%;
-    max-width: 750px;
-    margin: 0 auto;
+    width: 100%;
     background-image: url("/assets/flowerQuiz.png");
     background-repeat: no-repeat;
     background-position: center;
