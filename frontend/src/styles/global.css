@@ -1129,13 +1129,15 @@ body {
     padding: 1.5rem 1rem 2rem;
 }
 .quiz-flower-frame {
-    width: 100%;
+    width: 150%;
+    max-width: 750px;
+    margin: 0 auto;
     background-image: url("/assets/flowerQuiz.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    padding: 3rem 2.5rem;
-    min-height: 420px;
+    padding: 4.5rem 3.75rem;
+    min-height: 630px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1180,8 +1182,7 @@ body {
 
 @media (max-width: 480px) {
     .quiz-flower-frame {
-        padding: 2.5rem 1.5rem;
-        min-height: 360px;
+    width: 100%;
     }
 }
 
