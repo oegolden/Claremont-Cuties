@@ -62,6 +62,26 @@ const Home = () => {
   const completedTasks = homeTasks.filter(task => task.complete).length;
   const progressValue = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+  const [expandedFaq, setExpandedFaq] = useState(null);
+
+  const faqs = [
+    {
+      id: 'what-is-cc',
+      question: 'What exactly is Claremont Cuties?',
+      answer: 'Claremont Cuties is a matchmaking platform designed for the Claremont Colleges community. It uses a detailed compatibility quiz to help you find meaningful connections with other students based on shared interests, values, and preferences.'
+    },
+    {
+      id: 'how-different',
+      question: 'How is it different from Datamatch?',
+      answer: 'Claremont Cuties runs year-round, so you can find matches any time. It also features more serious and thoughtful questions designed to foster deeper connections, rather than just one-time seasonal events.'
+    },
+    {
+      id: 'privacy',
+      question: 'What happens to my information? Is it private?',
+      answer: 'Your information is kept private and secure. We only share your profile with potential matches, and you control what information is visible. We never sell your data or share it with third parties. You can delete your account and all your data at any time.'
+    }
+  ];
+
   return (
     <main className="main-content home-main">
       <div className="home-container">
@@ -107,6 +127,44 @@ const Home = () => {
             </ul>
           </div>
         </div>
+
+        <section className="faq-section">
+          <h2 className="section-title">frequently asked questions</h2>
+          <div className="faq-list">
+            {faqs.map((faq) => (
+              <div key={faq.id} className="faq-item">
+                <button
+                  className="faq-question"
+                  onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+                  aria-expanded={expandedFaq === faq.id}
+                >
+                  <span>{faq.question}</span>
+                  <span className="faq-icon">{expandedFaq === faq.id ? '−' : '+'}</span>
+                </button>
+                {expandedFaq === faq.id && (
+                  <div className="faq-answer">{faq.answer}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="contact-section">
+          <h2 className="section-title">get in touch</h2>
+          <div className="contact-content">
+            <p>Have questions or feedback? We'd love to hear from you.</p>
+            <div className="contact-methods">
+              <div className="contact-item">
+                <h3>Email</h3>
+                <a href="mailto:cuties@claremontcuties.com">cuties@claremontcuties.com</a>
+              </div>
+              <div className="contact-item">
+                <h3>Instagram</h3>
+                <a href="https://instagram.com/claremontcuties" target="_blank" rel="noopener noreferrer">@claremontcuties</a>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
