@@ -203,8 +203,6 @@ const allQuestions = [
       "Cooking/Baking",
       "Hiking/outdoors",
       "Partying",
-      "Campus clubs/student orgs",
-      "Side projects",
       "Social media",
     ],
     required: true,

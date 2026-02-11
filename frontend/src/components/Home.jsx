@@ -78,7 +78,7 @@ const Home = () => {
     {
       id: 'privacy',
       question: 'What happens to my information? Is it private?',
-      answer: 'Your information is kept private and secure. We only share your profile with potential matches, and you control what information is visible. We never sell your data or share it with third parties. You can delete your account and all your data at any time.'
+      // answer: 'Your information is kept private and secure. We only share your profile with potential matches, and you control what information is visible. We never sell your data or share it with third parties. You can delete your account and all your data at any time.'
     }
   ];
 

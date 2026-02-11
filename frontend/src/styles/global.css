@@ -1135,7 +1135,7 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    padding: 4.5rem 3.75rem;
+    padding: 3rem;
     min-height: 630px;
     display: flex;
     align-items: center;
@@ -1144,6 +1144,7 @@ body {
 .quiz-flower-content {
     width: 100%;
     max-width: 380px;
+    padding-top: 3rem;
 }
 .quiz-flower-frame .question-block {
     margin: 0;
