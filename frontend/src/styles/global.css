@@ -186,16 +186,16 @@ body {
     position: absolute;
     right: 0;
     bottom: 0;
-    width: 320px;
+    width: 400px;
     height: auto;
-    opacity: 0.9;
+    opacity: .9;
 }
 
 .home-envelope {
     position: absolute;
     left: 40px;
     top: 70px;
-    width: 360px;
+    width: 500px;
     height: auto;
     z-index: 2;
 }
@@ -204,7 +204,7 @@ body {
     position: absolute;
     left: 0;
     top: 10px;
-    width: 180px;
+    width: 250px;
     height: auto;
     z-index: 3;
 }
@@ -406,9 +406,8 @@ body {
 .todo-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
+    justify-content: flex-start;
+    gap: 5px;
     border-bottom: 1px solid #f0f0f0;
 }
 
