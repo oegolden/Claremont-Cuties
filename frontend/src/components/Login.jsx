@@ -47,7 +47,7 @@ const Login = () => {
     <div className="login-page">
       <div className="login-container">
         <div className="login-card">
-          <h1>Welcome to Datamatch</h1>
+          <h1>Welcome to Claremont Cuties</h1>
           <p className="subtitle">Sign in with your school account</p>
           
           {error && (

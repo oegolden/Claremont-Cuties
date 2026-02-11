@@ -36,7 +36,7 @@ const Home = () => {
   return (
     <main className="main-content">
       <div className="home-container">
-        <h1>Welcome to Datamatch</h1>
+        <h1>Welcome to Claremont Cuties</h1>
         
         <div className="countdown-container">
           {[

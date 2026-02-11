@@ -50,7 +50,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="nav-container">
         <div className="nav-brand">
-          <Link to="/">Datamatch</Link>
+          <Link to="/">Claremont Cuties</Link>
         </div>
         <div className="nav-menu">
           <div className="nav-links" style={{verticalAlign: 'bottom'}}>
