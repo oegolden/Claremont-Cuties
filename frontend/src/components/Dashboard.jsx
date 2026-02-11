@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ProgressBar from './ProgressBar';
 
 const Dashboard = () => {
   const { user, isAuthenticated, loading, setUserData } = useAuth();
@@ -403,6 +404,40 @@ const Dashboard = () => {
   }
 
   const quizTaken = user && user.form_id; // Check if user has completed the quiz
+  const hasPhoto = Boolean(user && user.user_photo);
+  const isFilled = (value) => Boolean(String(value ?? '').trim());
+  const isCampusComplete = Boolean(
+    formData.campus && (formData.campus !== 'Other' || isFilled(formData.campus_other))
+  );
+  const isGenderComplete = Boolean(
+    formData.gender && (formData.gender !== 'Other' || isFilled(formData.gender_other))
+  );
+  const isOrientationComplete = Boolean(
+    formData.sexual_orientation && (formData.sexual_orientation !== 'Other' || isFilled(formData.orientation_other))
+  );
+
+  const todoTasks = [
+    { id: 'name', label: 'Add name', complete: isFilled(formData.name), action: 'profile' },
+    { id: 'age', label: 'Add age', complete: isFilled(formData.age), action: 'profile' },
+    { id: 'campus', label: 'Add campus', complete: isCampusComplete, action: 'profile' },
+    { id: 'year', label: 'Add year', complete: isFilled(formData.year), action: 'profile' },
+    { id: 'gender', label: 'Add gender', complete: isGenderComplete, action: 'profile' },
+    { id: 'orientation', label: 'Add orientation', complete: isOrientationComplete, action: 'profile' },
+    { id: 'photo', label: 'Add photo', complete: hasPhoto, action: 'profile' },
+    { id: 'quiz', label: 'Take matching quiz', complete: Boolean(quizTaken), action: 'quiz' }
+  ];
+
+  const totalTasks = todoTasks.length;
+  const completedTasks = todoTasks.filter((task) => task.complete).length;
+  const progressValue = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const handleScrollToProfile = () => {
+    const el = document.getElementById('profile-form');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (typeof el.focus === 'function') el.focus();
+    }
+  };
 
   return (
     <main className="main-content">
@@ -414,7 +449,7 @@ const Dashboard = () => {
         <div className="dashboard-content">
           <div className="profile-section">
             <h2 className="section-title">Your Profile</h2>
-            <form className="profile-form" onSubmit={handleSaveProfile}>
+            <form id="profile-form" className="profile-form" onSubmit={handleSaveProfile}>
               <div className="form-group">
                 <label htmlFor="name">Name</label>
                 <input
@@ -666,23 +701,51 @@ const Dashboard = () => {
             </form>
           </div>
 
-          <div className="analysis-section">
-            <h2 className="section-title">A closer look at you....</h2>
-            <div className="analysis-content">
-              {!quizTaken ? (
-                <div className="quiz-cta">
-                  <h3>You haven't taken the quiz yet!</h3>
-                  <p>Complete the matching quiz so we can analyze your profile and suggest matches.</p>
-                  <button className="quiz-button" onClick={() => navigate('/quiz')}>
-                    Take the quiz!
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <h3>Thanks for finishing the quiz!</h3>
-                  <p>We're analyzing your responses and finding compatible matches for you.</p>
-                </div>
-              )}
+          <div className="analysis-column">
+            <div className="todo-section">
+              <h2 className="section-title">to do list</h2>
+              <div className="todo-progress-meta">{completedTasks} of {totalTasks} complete</div>
+              <ProgressBar progress={progressValue} />
+              <ul className="todo-list">
+                {todoTasks.map((task) => (
+                  <li key={task.id} className={`todo-item${task.complete ? ' completed' : ''}`}>
+                    <div className="todo-label">{task.label}</div>
+                    <div className="todo-action">
+                      {task.complete ? (
+                        <span className="todo-badge">Done</span>
+                      ) : task.action === 'quiz' ? (
+                        <button type="button" className="todo-action-button" onClick={() => navigate('/quiz')}>
+                          take quiz
+                        </button>
+                      ) : (
+                        <button type="button" className="todo-action-button" onClick={handleScrollToProfile}>
+                          edit profile
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="analysis-section">
+              <h2 className="section-title">A closer look at you....</h2>
+              <div className="analysis-content">
+                {!quizTaken ? (
+                  <div className="quiz-cta">
+                    <h3>You haven't taken the quiz yet!</h3>
+                    <p>Complete the matching quiz so we can analyze your profile and suggest matches.</p>
+                    <button className="quiz-button" onClick={() => navigate('/quiz')}>
+                      Take the quiz!
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <h3>Thanks for finishing the quiz!</h3>
+                    <p>We're analyzing your responses and finding compatible matches for you.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
