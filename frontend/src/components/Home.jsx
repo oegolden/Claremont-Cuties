@@ -156,11 +156,11 @@ const Home = () => {
             <div className="contact-methods">
               <div className="contact-item">
                 <h3>Email</h3>
-                <a href="mailto:cuties@claremontcuties.com">cuties@claremontcuties.com</a>
+                <a href="mailto:">coming soon</a>
               </div>
               <div className="contact-item">
                 <h3>Instagram</h3>
-                <a href="https://instagram.com/claremontcuties" target="_blank" rel="noopener noreferrer">@claremontcuties</a>
+                <a href="" target="_blank" rel="noopener noreferrer">@ coming soon</a>
               </div>
             </div>
           </div>
