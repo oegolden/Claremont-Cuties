@@ -6,6 +6,10 @@ const config = require('./config');
 const db = require('./config/db');
 const { verifyToken } = require('./middleware/jwtAuthentication');
 const MessagesService = require('./services/messagesService');
+const weeklyMatchJob = require('./cron/weeklyMatch');
+
+// Start the weekly matching cron job
+weeklyMatchJob.start();
 
 const PORT = (config && config.port) || process.env.PORT || 3000;
 
@@ -153,12 +157,12 @@ async function shutdown(signal) {
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (err) => {
-    // eslint-disable-next-line no-console
-    console.error('Uncaught exception', err);
-    shutdown('uncaughtException');
+  // eslint-disable-next-line no-console
+  console.error('Uncaught exception', err);
+  shutdown('uncaughtException');
 });
 process.on('unhandledRejection', (reason) => {
-    // eslint-disable-next-line no-console
-    console.error('Unhandled Rejection', reason);
-    shutdown('unhandledRejection');
+  // eslint-disable-next-line no-console
+  console.error('Unhandled Rejection', reason);
+  shutdown('unhandledRejection');
 });
