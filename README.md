@@ -1,4 +1,4 @@
-# datamatch-2
+# Claremont-Cuties
 
 ## Description
 Datamatch 2 is a Node.js application built with Express that provides a health check endpoint and serves as a template for further development.
